@@ -1,0 +1,62 @@
+@startuml
+
+class Customer {
+    - id : String
+    - name : String
+    - accounts : List<Account>
+    + addAccount(Account)
+}
+
+abstract class Account {
+    - id : String
+    - balance : double
+    + deposit(amount : double)
+    + withdraw(amount : double)
+    + getBalance() : double
+}
+
+class SavingsAccount {
+    - interestRate : double
+}
+
+class CurrentAccount {
+}
+
+class Transaction {
+    - type : String
+    - amount : double
+    - date : LocalDateTime
+}
+
+interface Repository<T> {
+    + add(T)
+    + findById(id : String)
+    + findAll() : List<T>
+}
+
+class InMemoryRepository<T>
+
+class BankService {
+    + createCustomer()
+    + createAccount()
+    + transfer()
+    + getTotalBalance()
+}
+
+class AccountService {
+    + deposit()
+    + withdraw()
+}
+
+Account <|-- SavingsAccount
+Account <|-- CurrentAccount
+
+Customer "1" --> "*" Account
+Account "1" --> "*" Transaction
+
+Repository <|.. InMemoryRepository
+BankService --> Repository
+BankService --> AccountService
+AccountService --> Account
+
+@enduml

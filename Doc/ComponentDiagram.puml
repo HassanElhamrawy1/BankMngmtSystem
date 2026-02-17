@@ -1,0 +1,42 @@
+
+@startuml
+
+package "banking.app (Module)" {
+    [Console UI]
+    [Main]
+}
+
+package "banking.core (Module)" {
+
+    package "Service Layer" {
+        [BankService]
+        [AccountService]
+    }
+
+    package "Repository Layer" {
+        [Repository<T>]
+        [InMemoryRepository<T>]
+    }
+
+    package "Model Layer" {
+        [Customer]
+        [Account]
+        [SavingsAccount]
+        [CurrentAccount]
+        [Transaction]
+    }
+
+    package "Persistence" {
+        [FileManager]
+    }
+}
+
+[Main] --> [Console UI]
+[Console UI] --> [BankService]
+[BankService] --> [AccountService]
+[BankService] --> [Repository<T>]
+[AccountService] --> [Account]
+[Repository<T>] --> [InMemoryRepository<T>]
+[FileManager] --> [Repository<T>]
+
+@enduml

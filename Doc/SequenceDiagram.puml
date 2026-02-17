@@ -1,0 +1,28 @@
+@startuml
+
+actor User
+participant "Console UI" as UI
+participant "BankService" as BS
+participant "AccountService" as AS
+participant "Repository" as Repo
+participant "Account" as Acc
+
+User -> UI : Enter transfer request
+UI -> BS : transfer(sourceId, targetId, amount)
+
+BS -> Repo : findById(sourceId)
+Repo --> BS : sourceAccount
+
+BS -> Repo : findById(targetId)
+Repo --> BS : targetAccount
+
+BS -> AS : withdraw(sourceAccount, amount)
+AS -> Acc : synchronized withdraw()
+
+BS -> AS : deposit(targetAccount, amount)
+AS -> Acc : synchronized deposit()
+
+BS --> UI : Transfer result
+UI --> User : Display success/failure
+
+@enduml

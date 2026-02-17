@@ -1,0 +1,45 @@
+@startuml
+
+start
+
+:Load data from file;
+
+if (Data exists?) then (Yes)
+    :Initialize repositories;
+else (No)
+    :Create empty repositories;
+endif
+
+while (User does not Exit?)
+
+    :Display Main Menu;
+    :Read User Input;
+
+    if (Create Customer?) then (Yes)
+        :Collect customer data;
+        :Call BankService.createCustomer();
+    elseif (Create Account?)
+        :Collect account data;
+        :Call BankService.createAccount();
+    elseif (Deposit?)
+        :Read account ID;
+        :Call AccountService.deposit();
+    elseif (Withdraw?)
+        :Read account ID;
+        :Call AccountService.withdraw();
+    elseif (Transfer?)
+        :Read source & target IDs;
+        :Call BankService.transfer();
+    elseif (Show Reports?)
+        :Use Streams to filter & calculate;
+    elseif (Simulate Concurrent Transactions?)
+        :Create Threads;
+        :Execute synchronized operations;
+    endif
+
+endwhile
+
+:Save data to file;
+stop
+
+@enduml
