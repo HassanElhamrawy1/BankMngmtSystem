@@ -17,11 +17,19 @@ public class Main
         /* Create service */
         BankService bankService = new BankService(customerRepo);
 
-        /* Create Customers */
+        /* ---------------- FR 01 Create Customers ---------------- */
         bankService.createCustomer("C1", "Hassan", "hassan@example.com", "+49123456789");
         bankService.createCustomer("C2", "Ali", "ali@example.com", "+49198765432");
+        
+        try 
+        {
+            bankService.createCustomer("C3", "Ahmed", "ahmed@example.com", "+49123456789");
+        } catch (IllegalArgumentException e) 
+        {
+            System.out.println("Validation Error: " + e.getMessage());
+        }
 
-        /* View Customers */
+        /* ---------------- FR 02 View Customers ---------------- */
         System.out.println("All Customers:");
         for (Customer c : bankService.getAllCustomers()) 
         {

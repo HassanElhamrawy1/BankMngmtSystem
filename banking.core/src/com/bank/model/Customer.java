@@ -3,7 +3,7 @@
 package com.bank.model;
 
 
-/* FR-01: Create Customer */
+/*---------------- FR-01: Create Customer ---------------- */
 public class Customer implements Identifiable 
 {
 
@@ -24,6 +24,17 @@ public class Customer implements Identifiable
     public String getId() 
     {
         return id;
+    }
+    
+    @Override
+    public String toString() 
+    {
+        return "Customer{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                '}';
     }
 
     public String getName() 

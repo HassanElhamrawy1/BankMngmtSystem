@@ -8,20 +8,23 @@ import java.util.List;
 
 /* FR-01: Create Customer,  FR-02: View Customers */
 
-public class InMemoryRepository<T extends Identifiable>
-        implements Repository<T> {
+public class InMemoryRepository<T extends Identifiable> implements Repository<T> {
 
     private List<T> entities = new ArrayList<>();
 
     @Override
-    public void add(T entity) {
+    public void add(T entity) 
+    {
         entities.add(entity);
     }
 
     @Override
-    public T findById(String id) {
-        for (T entity : entities) {
-            if (entity.getId().equals(id)) {
+    public T findById(String id) 
+    {
+        for (T entity : entities) 
+        {
+            if (entity.getId().equals(id)) 
+            {
                 return entity;
             }
         }
@@ -29,7 +32,8 @@ public class InMemoryRepository<T extends Identifiable>
     }
 
     @Override
-    public List<T> findAll() {
+    public List<T> findAll() 
+    {
         return new ArrayList<>(entities);
     }
 }
