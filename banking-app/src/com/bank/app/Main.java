@@ -3,6 +3,7 @@
 package com.bank.app;
 
 import com.bank.model.Customer;
+import com.bank.model.Account;
 import com.bank.repository.InMemoryRepository;
 import com.bank.service.BankService;
 
@@ -13,9 +14,10 @@ public class Main
     {
         /* Create repository */
         InMemoryRepository<Customer> customerRepo = new InMemoryRepository<>();
+        InMemoryRepository<Account> accountRepo = new InMemoryRepository<>();
 
         /* Create service */
-        BankService bankService = new BankService(customerRepo);
+        BankService bankService = new BankService(customerRepo, accountRepo);
 
         /* ---------------- FR 01 Create Customers ---------------- */
         bankService.createCustomer("C1", "Hassan", "hassan@example.com", "+49123456789");

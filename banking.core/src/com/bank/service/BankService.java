@@ -16,6 +16,7 @@ public class BankService
 
     private Repository<Customer> customerRepository;
     private Repository<Account> accountRepository;
+    private AccountService accountService;
 
     /* Simple regex patterns */
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
@@ -23,10 +24,11 @@ public class BankService
     private static final Pattern PHONE_PATTERN = Pattern.compile("^\\+?[0-9]{8,15}$");
 
     
-    public BankService(Repository<Customer> customerRepository) 
+    public BankService(Repository<Customer> customerRepository, Repository<Account> accountRepository) 
     {
         this.customerRepository = customerRepository;
         this.accountRepository = accountRepository;
+        this.accountService = new AccountService(accountRepository);
     }
 
     /* FR-01: Create Customer ---------------- */

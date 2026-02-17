@@ -11,6 +11,7 @@ public class CurrentAccount extends Account
         super(id, customerId);
     }
 
+    /* ---------------- FR-06: Withdraw Money ---------------- */
     @Override
     public void withdraw(double amount) 
     {
@@ -25,5 +26,6 @@ public class CurrentAccount extends Account
         }
 
         balance -= amount;
+        addTransaction(TransactionType.WITHDRAW, amount, "Withdraw from Current Account " + id);
     }
 }

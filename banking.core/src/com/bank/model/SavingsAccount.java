@@ -9,7 +9,9 @@ public class SavingsAccount extends Account
     {
         super(id, customerId);
     }
-
+    
+    
+    /* ---------------- FR-06: Withdraw Money ---------------- */
     @Override
     public void withdraw(double amount) 
     {
@@ -24,5 +26,6 @@ public class SavingsAccount extends Account
         }
 
         balance -= amount;
+        addTransaction(TransactionType.WITHDRAW, amount, "Withdraw from Savings Account " + id);
     }
 }
