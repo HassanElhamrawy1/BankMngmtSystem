@@ -1,0 +1,33 @@
+# Java build output
+bin/
+*.class
+
+# Maven
+target/
+*.jar
+*.war
+*.ear
+.m2/
+
+# Eclipse specific files
+.metadata/
+.classpath
+.project
+.settings/
+
+# macOS system files
+.DS_Store
+__MACOSX/
+
+# IntelliJ IDEA files
+.idea/
+*.iml
+out/
+
+# VS Code files
+.vscode/
+
+# Documentation temp files
+*.pages
+*.pages-tep
+*.rtf
