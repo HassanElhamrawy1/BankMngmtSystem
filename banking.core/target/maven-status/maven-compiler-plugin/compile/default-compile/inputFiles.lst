@@ -1,0 +1,15 @@
+/Users/hassanelhamrawy/eclipse-workspace/BankMngmtSystem/banking.core/src/main/java/com/bank/repository/InMemoryRepository.java
+/Users/hassanelhamrawy/eclipse-workspace/BankMngmtSystem/banking.core/src/main/java/com/bank/model/Identifiable.java
+/Users/hassanelhamrawy/eclipse-workspace/BankMngmtSystem/banking.core/src/main/java/com/bank/model/TransactionType.java
+/Users/hassanelhamrawy/eclipse-workspace/BankMngmtSystem/banking.core/src/main/java/com/bank/model/Transaction.java
+/Users/hassanelhamrawy/eclipse-workspace/BankMngmtSystem/banking.core/src/main/java/com/bank/repository/InMemoryAccountRepository.java
+/Users/hassanelhamrawy/eclipse-workspace/BankMngmtSystem/banking.core/src/main/java/com/bank/model/CurrentAccount.java
+/Users/hassanelhamrawy/eclipse-workspace/BankMngmtSystem/banking.core/src/main/java/com/bank/repository/CustomerRepository.java
+/Users/hassanelhamrawy/eclipse-workspace/BankMngmtSystem/banking.core/src/main/java/com/bank/repository/AccountRepository.java
+/Users/hassanelhamrawy/eclipse-workspace/BankMngmtSystem/banking.core/src/main/java/com/bank/util/FileManager.java
+/Users/hassanelhamrawy/eclipse-workspace/BankMngmtSystem/banking.core/src/main/java/com/bank/model/Account.java
+/Users/hassanelhamrawy/eclipse-workspace/BankMngmtSystem/banking.core/src/main/java/com/bank/model/Customer.java
+/Users/hassanelhamrawy/eclipse-workspace/BankMngmtSystem/banking.core/src/main/java/com/bank/service/AccountService.java
+/Users/hassanelhamrawy/eclipse-workspace/BankMngmtSystem/banking.core/src/main/java/com/bank/service/BankService.java
+/Users/hassanelhamrawy/eclipse-workspace/BankMngmtSystem/banking.core/src/main/java/com/bank/repository/Repository.java
+/Users/hassanelhamrawy/eclipse-workspace/BankMngmtSystem/banking.core/src/main/java/com/bank/model/SavingsAccount.java
