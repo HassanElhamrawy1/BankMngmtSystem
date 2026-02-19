@@ -10,7 +10,9 @@ public enum MenuChoice
     TRANSFER(6, "Transfer"),
     VIEW_ACCOUNT(7, "View Account"),
     LIST_ACCOUNTS(8, "List Accounts"),
-    EXIT(9, "Exit"),
+    VIEW_REPORTS(9, "List Reports"),
+    VIEW_TRANSACTIONS(10, "List Transactions"),
+    EXIT(11, "Exit"),
     INVALID(-1, "Invalid Choice");
 
     private final int code;

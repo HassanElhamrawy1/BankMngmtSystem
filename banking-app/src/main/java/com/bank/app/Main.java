@@ -11,6 +11,7 @@ import com.bank.service.BankService;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.util.List;
 
 
 public class Main 
@@ -61,7 +62,9 @@ public class Main
         System.out.println("6. Transfer");
         System.out.println("7. View Account");
         System.out.println("8. List Accounts");
-        System.out.println("9. Exit");
+        System.out.println("9. List Reports");
+        System.out.println("10. List Transactions");
+        System.out.println("11. Exit");
         System.out.println("==========================================");
         System.out.print("Enter your choice (The NO.): ");
     }
@@ -108,6 +111,12 @@ public class Main
             case LIST_ACCOUNTS:
                 listAccounts();
                 break;
+            case VIEW_REPORTS:
+                viewReports();
+                break;
+            case VIEW_TRANSACTIONS:
+                viewTransactions();
+                break;    
             case EXIT:
                 return false; /* Exit */
             case INVALID:
@@ -236,5 +245,141 @@ public class Main
         bankService.createAccount("A1", "C1", "SAVINGS", 5000);
         bankService.createAccount("A2", "C2", "CURRENT", 3000);
     }
+    
+    /* ---------------- FR-11: Transaction History ---------------- */
+    private static void viewTransactions() 
+    {
+        System.out.print("Enter Account ID (or 'all' for all accounts): ");
+        scanner.nextLine(); /* clear buffer */
+        String input = scanner.nextLine();
+        
+        if ("all".equalsIgnoreCase(input)) 
+        {
+            bankService.printAllTransactions();
+        } else 
+        {
+            try 
+            {
+                bankService.printAccountTransactions(input);
+            } catch (IllegalArgumentException e) 
+            {
+                System.out.println("Error: " + e.getMessage());
+            }
+        }
+    }
+    /* ---------------- FR-10: Account Queries and Reporting ---------------- */
+    private static void viewReports() 
+	{
+	    boolean reportingMenu = true;
+	    
+	    while (reportingMenu) 
+	    {
+	        System.out.println("\n========== Account Reports ==========");
+	        System.out.println("1. Total Accounts");
+	        System.out.println("2. Total Balance");
+	        System.out.println("3. Highest Balance Account");
+	        System.out.println("4. Filter by Minimum Balance");
+	        System.out.println("5. Filter by Maximum Balance");
+	        System.out.println("6. Filter by Balance Range");
+	        System.out.println("7. Back to main menu");
+	        System.out.print("Choose option: ");
+	        
+	        int choice = getUserChoice();
+	        ReportChoice reportChoice = ReportChoice.fromCode(choice);
+	        
+	        switch (reportChoice) 
+	        {
+	            case TOTAL_ACCOUNTS:
+	                System.out.println("Total Accounts: " + bankService.getTotalAccounts());
+	                break;
+	            case TOTAL_BALANCE:
+	                System.out.println("Total Balance: " + bankService.getTotalBalance());
+	                break;
+	            case HIGHEST_BALANCE:
+	                Account highest = bankService.getHighestBalanceAccount();
+	                if (highest != null) 
+	                {
+	                    System.out.println("Highest Balance Account: " + highest.getId() + 
+	                                     " (" + highest.getBalance() + ")");
+	                } else 
+	                {
+	                    System.out.println("No accounts found.");
+	                }
+	                break;
+	            case FILTER_MIN_BALANCE:
+	                filterByMinBalance();
+	                break;
+	            case FILTER_MAX_BALANCE:
+	                filterByMaxBalance();
+	                break;
+	            case FILTER_RANGE:
+	                filterByRange();
+	                break;
+	            case BACK:
+	                reportingMenu = false;
+	                break;
+	            case INVALID:
+	                System.out.println("Invalid choice!");
+	        }
+	    }
+	    System.out.println("=====================================");
+	}
+
+    private static void filterByMinBalance() 
+    {
+        System.out.print("Enter minimum balance: ");
+        double minBalance = scanner.nextDouble();
+        
+        List<Account> filtered = bankService.filterAccountsByMinBalance(minBalance);
+        
+        if (filtered.isEmpty()) 
+        {
+            System.out.println("No accounts found with balance >= " + minBalance);
+        } else 
+        {
+            System.out.println("\nAccounts with balance >= " + minBalance + ":");
+            filtered.forEach(acc -> System.out.println("  " + acc.getId() + 
+                                                       ": " + acc.getBalance()));
+        }
+    }
+
+    private static void filterByMaxBalance() 
+    {
+        System.out.print("Enter maximum balance: ");
+        double maxBalance = scanner.nextDouble();
+        
+        List<Account> filtered = bankService.filterAccountsByMaxBalance(maxBalance);
+        
+        if (filtered.isEmpty()) 
+        {
+            System.out.println("No accounts found with balance <= " + maxBalance);
+        } else 
+        {
+            System.out.println("\nAccounts with balance <= " + maxBalance + ":");
+            filtered.forEach(acc -> System.out.println("  " + acc.getId() + 
+                                                       ": " + acc.getBalance()));
+        }
+    }
+
+    private static void filterByRange() 
+    {
+        System.out.print("Enter minimum balance: ");
+        double minBalance = scanner.nextDouble();
+        System.out.print("Enter maximum balance: ");
+        double maxBalance = scanner.nextDouble();
+        
+        List<Account> filtered = bankService.filterAccountsByBalanceRange(minBalance, maxBalance);
+        
+        if (filtered.isEmpty()) 
+        {
+            System.out.println("No accounts found in range [" + minBalance + ", " + maxBalance + "]");
+        } else 
+        {
+            System.out.println("\nAccounts with balance in range [" + minBalance + ", " + maxBalance + "]:");
+            filtered.forEach(acc -> System.out.println("  " + acc.getId() + 
+                                                       ": " + acc.getBalance()));
+        }
+    }
+    
     
 }

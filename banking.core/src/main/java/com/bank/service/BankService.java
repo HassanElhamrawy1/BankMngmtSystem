@@ -212,4 +212,65 @@ public class BankService
         }
     }
     
+    /* ---------------- FR-10: Account Queries and Reporting ---------------- */
+
+    /* get all accounts which banance >= the minBalance */
+    public List<Account> filterAccountsByMinBalance(double minBalance) 
+    {
+        return accountRepository.findAll()
+            .stream().filter(account -> account.getBalance() >= minBalance).toList();
+    }
+    
+    /* get all accounts which banance <= the maxBalance */
+    public List<Account> filterAccountsByMaxBalance(double maxBalance) 
+    {
+        return accountRepository.findAll()
+            .stream().filter(account -> account.getBalance() <= maxBalance).toList();
+    }
+
+    public List<Account> filterAccountsByBalanceRange(double minBalance, double maxBalance) 
+    {
+        return accountRepository.findAll()
+            .stream().filter(account -> account.getBalance() >= minBalance && 
+            			account.getBalance() <= maxBalance).toList();
+    }
+
+    /* Additional queries */
+    public double getTotalBalance() 
+    {
+        return accountRepository.findAll().stream().mapToDouble(Account::getBalance).sum();
+    }
+
+    public Account getHighestBalanceAccount() 
+    {
+        return accountRepository.findAll()
+            .stream().max((a1, a2) -> Double.compare(a1.getBalance(), a2.getBalance())).orElse(null);
+    }
+
+    public int getTotalAccounts() 
+    {
+        return accountRepository.findAll().size();
+    }
+
+    
+    /* ---------------- FR-11: Transaction History ---------------- */
+    public void printAllTransactions() 
+    {
+        accountRepository.findAll().forEach(account -> {
+            System.out.println("\n--- Account: " + account.getId() + " ---");
+            account.getTransactions().forEach(System.out::println);
+        });
+    }
+
+    public void printAccountTransactions(String accountId) 
+    {
+        Account account = accountRepository.findById(accountId);
+        if (account == null) 
+        {
+            throw new IllegalArgumentException("Account not found.");
+        }
+        System.out.println("\n--- Transactions for Account: " + accountId + " ---");
+        account.getTransactions().forEach(System.out::println);
+    }
+    
 }
