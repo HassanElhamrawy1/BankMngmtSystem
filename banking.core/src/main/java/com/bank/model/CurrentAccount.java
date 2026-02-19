@@ -6,10 +6,16 @@ package com.bank.model;
 public class CurrentAccount extends Account 
 {
 
-    public CurrentAccount(String id, String customerId) 
-    {
-        super(id, customerId);
-    }
+	public CurrentAccount(String id, String customerId) 
+	{
+	    super(id, customerId);
+	}
+
+	public CurrentAccount(String id, String customerId, double balance) 
+	{
+	    super(id, customerId);
+	    this.balance = balance;
+	}
 
     /* ---------------- FR-06: Withdraw Money ---------------- */
     @Override

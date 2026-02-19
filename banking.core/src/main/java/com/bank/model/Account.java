@@ -47,12 +47,16 @@ public abstract class Account implements Identifiable
         {
             throw new IllegalArgumentException("Deposit amount must be positive.");
         }
-        balance += amount;
+        this.balance += amount;
         /* Add transaction record */
         addTransaction(TransactionType.DEPOSIT, amount, "Deposit to account " + id);
     }
     
+    
+    
+    
     /* Helper method to add transaction*/
+    /* InMemory Operations */
     protected void addTransaction(TransactionType type, double amount, String description)
     {
         transactions.add(new Transaction(
@@ -61,6 +65,11 @@ public abstract class Account implements Identifiable
             amount,
             description
         ));
+    }
+    /* DB Operations */
+    public void addTransaction(Transaction transaction) 
+    {
+        transactions.add(transaction);
     }
 
     /* Withdraw logic will be override from the SavingsAccount and CurrentAccount classes */

@@ -47,7 +47,7 @@ public class Customer implements Identifiable
         return email;
     }
 
-    public String getPhoneNumber() 
+    public String getphone() 
     {
         return phoneNumber;
     }

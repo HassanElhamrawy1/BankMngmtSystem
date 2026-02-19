@@ -18,7 +18,16 @@ public class Transaction
         this.id = id;
         this.type = type;
         this.amount = amount;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = LocalDateTime.now();  /* Automatic to the DB */
+        this.description = description;
+    }
+
+    public Transaction(String id, TransactionType type, double amount, String timestamp, String description) 
+    {
+        this.id = id;
+        this.type = type;
+        this.amount = amount;
+        this.timestamp = LocalDateTime.parse(timestamp);  /* parse it (convert to string before saving to the DB )*/
         this.description = description;
     }
 
@@ -47,11 +56,15 @@ public class Transaction
     	return description; 
     }
 
+    public String getTimestampAsString() 
+    {
+        return timestamp.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
+
     @Override
     public String toString() 
     {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        return String.format("[%s] %s: %.2f - %s (%s)", 
-        					  timestamp.format(formatter), type, amount, description, id);
+        return String.format("[%s] %s: %.2f - %s", 
+            getTimestampAsString(), type.getDisplayName(), amount, description);
     }
 }

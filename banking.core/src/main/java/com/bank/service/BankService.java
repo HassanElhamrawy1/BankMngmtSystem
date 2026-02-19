@@ -44,7 +44,7 @@ public class BankService
         validatePhone(phoneNumber);
 
         Customer customer = new Customer(id, name, email, phoneNumber);
-        customerRepository.add(customer);
+        customerRepository.save(customer);
     }
 
     /*----------------  FR-02: View Customers ---------------- */
@@ -95,7 +95,7 @@ public class BankService
             account.deposit(initialBalance);
         }
         
-        accountRepository.add(account);
+        accountRepository.save(account);
     }
     
     /*----------------  FR-05: Deposit ---------------- */
@@ -115,6 +115,7 @@ public class BankService
         }
         
         account.deposit(amount);
+        accountRepository.save(account);
     }
     
     /*----------------  FR-06: Withdraw ---------------- */
@@ -133,7 +134,7 @@ public class BankService
             throw new IllegalArgumentException("Amount must be positive.");
         }
         
-        account.withdraw(amount);
+        accountRepository.save(account);  
     }
     
     /*----------------  FR-07: Transfer ---------------- */
@@ -157,6 +158,10 @@ public class BankService
         /* Perform transfer */
         fromAccount.withdraw(amount);
         toAccount.deposit(amount);
+        
+        accountRepository.save(fromAccount);  
+        accountRepository.save(toAccount);    
+        
     }
     
     /*----------------  FR-08: View Account Details ---------------- */
@@ -274,3 +279,10 @@ public class BankService
     }
     
 }
+
+
+
+
+
+
+

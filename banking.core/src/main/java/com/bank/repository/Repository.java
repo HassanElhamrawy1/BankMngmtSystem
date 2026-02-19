@@ -7,9 +7,10 @@ import java.util.List;
 public interface Repository<T> 
 {
 
-    void add(T entity);
+    void save(T entity);
 
     T findById(String id);
 
     List<T> findAll();
+    void delete(String id);
 }

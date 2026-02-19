@@ -6,9 +6,11 @@ import com.bank.model.Customer;
 import com.bank.model.Account;
 
 import com.bank.repository.Repository;
-import com.bank.repository.InMemoryRepository;
+import com.bank.repository.JdbcCustomerRepository;
+import com.bank.repository.JdbcAccountRepository;
 import com.bank.service.BankService;
 
+import java.sql.SQLException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.List;
@@ -23,32 +25,39 @@ public class Main
 
     public static void main(String[] args) 
     {
-        /* create repository */
-        InMemoryRepository<Customer> customerRepo = new InMemoryRepository<>();
-        InMemoryRepository<Account> accountRepo = new InMemoryRepository<>();
-        
-        /* initialize service */
-        bankService = new BankService(customerRepo, accountRepo);
-        /* initialize scanner */
-        scanner = new Scanner(System.in);
-
-
-        /* ---------------- FR 01 Create Customers ---------------- */
-        loadSampleData();
-        
-
-        /* ---------------- Main menu loop---------------- */
-        boolean running = true;
-        while (running) 
+    	/* ----------------  FR-12 & FR-13: Initialize Database and Load Data  ---------------- */
+    	try 
         {
-            displayMenu();
-            int choice = getUserChoice();
-            running = handleMenuChoice(choice);
-        }
+            /* Initialize database */
+            DatabaseConfig.initializeDatabase();
 
-        scanner.close();
-        System.out.println("Thank you for using Bank Management System!");
-        
+            /* Load repositories from database */
+            Repository<Customer> customerRepository = new JdbcCustomerRepository();
+            Repository<Account> accountRepository = new JdbcAccountRepository();
+
+            /* Initialize services */
+            bankService = new BankService(customerRepository, accountRepository);
+            /* Initialize scanner */
+            scanner = new Scanner(System.in);
+
+            /* ----------------  Main menu loop  ---------------- */
+            boolean running = true;
+            while (running) 
+            {
+                displayMenu();
+                int choice = getUserChoice();
+                running = handleMenuChoice(choice);
+            }
+
+            scanner.close();
+            /* ----------------  FR-15: Graceful Shutdown  ---------------- */
+            DatabaseConfig.closeConnection();
+            System.out.println("Thank you for using Bank Management System!");
+	    } 
+    	catch (SQLException e) 
+	    {
+	        System.err.println("Database error: " + e.getMessage());
+	    }
     }
     
     private static void displayMenu() 
@@ -126,148 +135,188 @@ public class Main
         return true;
     }
     
-    /*----------------  FR-01: Create Customer---------------- */
+    /* ----------------  FR-01: Create Customer  ---------------- */
     private static void createCustomer() 
     {
-        scanner.nextLine(); 								/* clear the buffer */
-        System.out.print("Enter Customer ID: ");
-        String id = scanner.nextLine();
-        System.out.print("Enter Name: ");
-        String name = scanner.nextLine();
-        System.out.print("Enter Email: ");
-        String email = scanner.nextLine();
-        System.out.print("Enter Phone Number: ");
-        String phone = scanner.nextLine();
+        try 
+        {
+            scanner.nextLine(); 								/* clear the buffer */
+            System.out.print("Enter Customer ID: ");
+            String id = scanner.nextLine();
+            System.out.print("Enter Name: ");
+            String name = scanner.nextLine();
+            System.out.print("Enter Email: ");
+            String email = scanner.nextLine();
+            System.out.print("Enter Phone Number: ");
+            String phone = scanner.nextLine();
 
-        bankService.createCustomer(id, name, email, phone);
-        System.out.println("✓ Customer created successfully!");
+            bankService.createCustomer(id, name, email, phone);
+            System.out.println("✓ Customer created successfully!");
+        } catch (Exception e) 
+        {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 
-    /* ---------------- FR 02 View Customers ---------------- */
+    /* ----------------  FR-02: View All Customers  ---------------- */
     private static void viewAllCustomers() 
     {
         System.out.println("\n--- All Customers ---");
-        bankService.getAllCustomers().forEach(System.out::println);
+        List<Customer> customers = bankService.getAllCustomers();
+        if (customers.isEmpty()) 
+        {
+            System.out.println("No customers found.");
+        } else 
+        {
+            customers.forEach(System.out::println);
+        }
     }
-    /*----------------  FR-04: Create Account---------------- */
+
+    /* ----------------  FR-04: Create Account  ---------------- */
     private static void createAccount() 
     {
-        scanner.nextLine(); 								/* clear the buffer */
-        System.out.print("Enter Account ID: ");
-        String accountId = scanner.nextLine();
-        System.out.print("Enter Customer ID: ");
-        String customerId = scanner.nextLine();
-        System.out.print("Enter Account Type (SAVINGS/CURRENT): ");
-        String type = scanner.nextLine().toUpperCase();
-        System.out.print("Enter Initial Balance: ");
-        double balance = scanner.nextDouble();
+        try 
+        {
+            scanner.nextLine(); 								/* clear the buffer */
+            System.out.print("Enter Account ID: ");
+            String accountId = scanner.nextLine();
+            System.out.print("Enter Customer ID: ");
+            String customerId = scanner.nextLine();
+            System.out.print("Enter Account Type (SAVINGS/CURRENT): ");
+            String type = scanner.nextLine().toUpperCase();
+            System.out.print("Enter Initial Balance: ");
+            double balance = scanner.nextDouble();
 
-        bankService.createAccount(accountId, customerId, type, balance);
-        System.out.println("✓ Account created successfully!");
+            bankService.createAccount(accountId, customerId, type, balance);
+            System.out.println("✓ Account created successfully!");
+        } catch (Exception e) 
+        {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
-    /*----------------  FR-05: Transfer Money ---------------- */
+
+    /* ----------------  FR-05: Deposit Money  ---------------- */
     private static void deposit() 
     {
-        scanner.nextLine(); 								/* clear the buffer */
-        System.out.print("Enter Account ID: ");
-        String accountId = scanner.nextLine();
-        System.out.print("Enter Amount: ");
-        double amount = scanner.nextDouble();
+        try 
+        {
+            scanner.nextLine(); 								/* clear the buffer */
+            System.out.print("Enter Account ID: ");
+            String accountId = scanner.nextLine();
+            System.out.print("Enter Amount: ");
+            double amount = scanner.nextDouble();
 
-        bankService.deposit(accountId, amount);
-        System.out.println("✓ Deposit successful!");
+            bankService.deposit(accountId, amount);
+            System.out.println("✓ Deposit successful!");
+        } catch (Exception e) 
+        {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
-    /*----------------  FR-06: Withdraw Money ---------------- */
+
+    /* ----------------  FR-06: Withdraw Money  ---------------- */
     private static void withdraw() 
     {
-        scanner.nextLine(); 								/* clear the buffer */
-        System.out.print("Enter Account ID: ");
-        String accountId = scanner.nextLine();
-        System.out.print("Enter Amount: ");
-        double amount = scanner.nextDouble();
+        try 
+        {
+            scanner.nextLine(); 								/* clear the buffer */
+            System.out.print("Enter Account ID: ");
+            String accountId = scanner.nextLine();
+            System.out.print("Enter Amount: ");
+            double amount = scanner.nextDouble();
 
-        bankService.withdraw(accountId, amount);
-        System.out.println("✓ Withdrawal successful!");
+            bankService.withdraw(accountId, amount);
+            System.out.println("✓ Withdrawal successful!");
+        } catch (Exception e) 
+        {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
-    /*----------------  FR-07: Transfer Money ---------------- */
+
+    /* ----------------  FR-07: Transfer Money  ---------------- */
     private static void transfer() 
     {
-        scanner.nextLine();    								/* clear the buffer */
-        System.out.print("Enter From Account ID: ");
-        String fromAccountId = scanner.nextLine();
-        System.out.print("Enter To Account ID: ");
-        String toAccountId = scanner.nextLine();
-        System.out.print("Enter Amount: ");
-        double amount = scanner.nextDouble();
-
-        bankService.transfer(fromAccountId, toAccountId, amount);
-        System.out.println("✓ Transfer successful!");
-    }
-    
-    /*----------------  FR-08: View Account Details ---------------- */
-    private static void viewAccount() 
-    {
-        scanner.nextLine(); 								/* clear the buffer */
-        System.out.print("Enter Account ID: ");
-        String accountId = scanner.nextLine();
-
-        Account account = bankService.getAccount(accountId);
-        if (account != null) 
+        try 
         {
-            System.out.println("\n--- Account Details ---");
-            System.out.println(account);
-        } 
-        else 
+            scanner.nextLine();    								/* clear the buffer */
+            System.out.print("Enter From Account ID: ");
+            String fromAccountId = scanner.nextLine();
+            System.out.print("Enter To Account ID: ");
+            String toAccountId = scanner.nextLine();
+            System.out.print("Enter Amount: ");
+            double amount = scanner.nextDouble();
+
+            bankService.transfer(fromAccountId, toAccountId, amount);
+            System.out.println("✓ Transfer successful!");
+        } catch (Exception e) 
         {
-            System.out.println("Account not found!");
+            System.out.println("Error: " + e.getMessage());
         }
     }
     
-    /*----------------  FR-09: List All Accounts ---------------- */
+    /* ----------------  FR-08: View Account Details  ---------------- */
+    private static void viewAccount() 
+    {
+        try 
+        {
+            scanner.nextLine(); 								/* clear the buffer */
+            System.out.print("Enter Account ID: ");
+            String accountId = scanner.nextLine();
+
+            Account account = bankService.getAccount(accountId);
+            if (account != null) 
+            {
+                System.out.println("\n--- Account Details ---");
+                System.out.println(account);
+            } 
+            else 
+            {
+                System.out.println("Account not found!");
+            }
+        } catch (Exception e) 
+        {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+    
+    /* ----------------  FR-09: List All Accounts  ---------------- */
     private static void listAccounts() 
     {
         System.out.println("\n--- All Accounts ---");
-        bankService.getAllAccounts().forEach(System.out::println);
-        /*for (Customer c : bankService.getAllCustomers()) 
+        List<Account> accounts = bankService.getAllAccounts();
+        if (accounts.isEmpty()) 
         {
-            System.out.println(c);
-        }*/
-    }
-
-    private static void loadSampleData() 
-    {
-        /* Sample customers */
-        bankService.createCustomer("C1", "Hassan", "hassan@example.com", "+49123456789");
-        bankService.createCustomer("C2", "Ali", "ali@example.com", "+49198765432");
-        bankService.createCustomer("C3", "Ahmed", "ahmed@example.com", "+49123456789");
-
-        /* Sample accounts */
-        bankService.createAccount("A1", "C1", "SAVINGS", 5000);
-        bankService.createAccount("A2", "C2", "CURRENT", 3000);
-    }
-    
-    /* ---------------- FR-11: Transaction History ---------------- */
-    private static void viewTransactions() 
-    {
-        System.out.print("Enter Account ID (or 'all' for all accounts): ");
-        scanner.nextLine(); /* clear buffer */
-        String input = scanner.nextLine();
-        
-        if ("all".equalsIgnoreCase(input)) 
-        {
-            bankService.printAllTransactions();
+            System.out.println("No accounts found.");
         } else 
         {
-            try 
-            {
-                bankService.printAccountTransactions(input);
-            } catch (IllegalArgumentException e) 
-            {
-                System.out.println("Error: " + e.getMessage());
-            }
+            accounts.forEach(System.out::println);
         }
     }
-    /* ---------------- FR-10: Account Queries and Reporting ---------------- */
+
+    
+    /* ----------------  FR-11: Transaction History  ---------------- */
+    private static void viewTransactions() 
+    {
+        try 
+        {
+            System.out.print("Enter Account ID (or 'all' for all accounts): ");
+            scanner.nextLine(); /* clear buffer */
+            String input = scanner.nextLine();
+            
+            if ("all".equalsIgnoreCase(input)) 
+            {
+                bankService.printAllTransactions();
+            } else 
+            {
+                bankService.printAccountTransactions(input);
+            }
+        } catch (Exception e) 
+        {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    /* ----------------  FR-10: Account Queries and Reporting  ---------------- */
     private static void viewReports() 
 	{
 	    boolean reportingMenu = true;
@@ -330,16 +379,16 @@ public class Main
         System.out.print("Enter minimum balance: ");
         double minBalance = scanner.nextDouble();
         
-        List<Account> filtered = bankService.filterAccountsByMinBalance(minBalance);
+        List<Account> filteredAccounts = bankService.filterAccountsByMinBalance(minBalance);
         
-        if (filtered.isEmpty()) 
+        if (filteredAccounts.isEmpty()) 
         {
             System.out.println("No accounts found with balance >= " + minBalance);
         } else 
         {
             System.out.println("\nAccounts with balance >= " + minBalance + ":");
-            filtered.forEach(acc -> System.out.println("  " + acc.getId() + 
-                                                       ": " + acc.getBalance()));
+            filteredAccounts.forEach(account -> System.out.println("  " + account.getId() + 
+                                                       ": " + account.getBalance()));
         }
     }
 
@@ -356,8 +405,8 @@ public class Main
         } else 
         {
             System.out.println("\nAccounts with balance <= " + maxBalance + ":");
-            filtered.forEach(acc -> System.out.println("  " + acc.getId() + 
-                                                       ": " + acc.getBalance()));
+            filtered.forEach(account -> System.out.println("  " + account.getId() + 
+                                                       ": " + account.getBalance()));
         }
     }
 
@@ -368,18 +417,16 @@ public class Main
         System.out.print("Enter maximum balance: ");
         double maxBalance = scanner.nextDouble();
         
-        List<Account> filtered = bankService.filterAccountsByBalanceRange(minBalance, maxBalance);
+        List<Account> filteredAccounts = bankService.filterAccountsByBalanceRange(minBalance, maxBalance);
         
-        if (filtered.isEmpty()) 
+        if (filteredAccounts.isEmpty()) 
         {
             System.out.println("No accounts found in range [" + minBalance + ", " + maxBalance + "]");
         } else 
         {
             System.out.println("\nAccounts with balance in range [" + minBalance + ", " + maxBalance + "]:");
-            filtered.forEach(acc -> System.out.println("  " + acc.getId() + 
-                                                       ": " + acc.getBalance()));
+            filteredAccounts.forEach(account -> System.out.println("  " + account.getId() + 
+                                                       ": " + account.getBalance()));
         }
     }
-    
-    
 }

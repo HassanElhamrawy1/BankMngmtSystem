@@ -5,10 +5,16 @@ package com.bank.model;
 public class SavingsAccount extends Account 
 {
 
-    public SavingsAccount(String id, String customerId) 
-    {
-        super(id, customerId);
-    }
+	public SavingsAccount(String id, String customerId) 
+	{
+	    super(id, customerId);
+	}
+
+	public SavingsAccount(String id, String customerId, double balance) 
+	{
+	    super(id, customerId);
+	    this.balance = balance;
+	}
     
     
     /* ---------------- FR-06: Withdraw Money ---------------- */
