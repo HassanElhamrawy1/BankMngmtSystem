@@ -11,7 +11,7 @@ import java.util.List;
 
 public class JdbcAccountRepository implements Repository<Account> 
 {
-    private static final String DB_URL = "jdbc:sqlite:bank.db";
+    private static final String DB_URL = "jdbc:sqlite:bank-system.db";
 
     private Connection getConnection() throws SQLException 
     {

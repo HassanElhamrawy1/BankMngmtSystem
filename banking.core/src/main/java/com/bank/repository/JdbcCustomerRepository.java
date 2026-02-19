@@ -8,7 +8,7 @@ import java.util.List;
 
 public class JdbcCustomerRepository implements Repository<Customer> 
 {
-    private static final String DB_URL = "jdbc:sqlite:bank.db";
+    private static final String DB_URL = "jdbc:sqlite:bank-system.db";
 
     private Connection getConnection() throws SQLException 
     {

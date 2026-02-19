@@ -8,7 +8,7 @@ import java.sql.Statement;
 
 public class DatabaseConfig 
 {
-    private static final String DB_URL = "jdbc:sqlite:bank.db";
+    private static final String DB_URL = "jdbc:sqlite:bank-system.db";
     private static Connection connection;
 
     public static Connection getConnection() throws SQLException 
