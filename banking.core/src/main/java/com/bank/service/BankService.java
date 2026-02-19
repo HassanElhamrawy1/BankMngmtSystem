@@ -31,7 +31,7 @@ public class BankService
         this.accountService = new AccountService(accountRepository);
     }
 
-    /* FR-01: Create Customer ---------------- */
+    /* ---------------- FR-01: Create Customer ---------------- */
     public void createCustomer(String id, String name, String email, String phoneNumber) 
     {
         /* check duplicate id */
@@ -39,7 +39,7 @@ public class BankService
         {
             throw new IllegalArgumentException("Customer with id " + id + " already exists.");
         }
-        /* Validate Email and phone number */ 
+        /*----------------  FR-03: Validate Customer Data ---------------- */
         validateEmail(email);
         validatePhone(phoneNumber);
 
@@ -52,44 +52,149 @@ public class BankService
     {
         return customerRepository.findAll();
     }
+    
     /*----------------  FR-04: Create Accounts ---------------- */
     public void createAccount(String accountId, String customerId, String type) 
     {
+        createAccount(accountId, customerId, type, 0.0);
+    }
 
-		/* Check account already exists */
-		if (accountRepository.findById(accountId) != null) 
-		{
-			throw new IllegalArgumentException("Account already exists.");
-		}
-		
-		/* Check customer exists */
-		if (customerRepository.findById(customerId) == null) 
-		{
-			throw new IllegalArgumentException("Customer does not exist.");
-		}
-		
-		Account account;
-		
-		switch (type.toUpperCase()) 
-		{
-			case "SAVINGS":
-			account = new SavingsAccount(accountId, customerId);
-			break;
-			
-			case "CURRENT":
-			account = new CurrentAccount(accountId, customerId);
-			break;
-			
-			default:
-			throw new IllegalArgumentException("Invalid account type.");
-		}
-		
-		accountRepository.add(account);
-	}
+    public void createAccount(String accountId, String customerId, String type, double initialBalance) 
+    {
+        /* Check account already exists */
+        if (accountRepository.findById(accountId) != null) 
+        {
+            throw new IllegalArgumentException("Account already exists.");
+        }
+        
+        /* Check customer exists */
+        if (customerRepository.findById(customerId) == null) 
+        {
+            throw new IllegalArgumentException("Customer does not exist.");
+        }
+        
+        Account account;
+        
+        switch (type.toUpperCase()) 
+        {
+            case "SAVINGS":
+                account = new SavingsAccount(accountId, customerId);
+                break;
+                
+            case "CURRENT":
+                account = new CurrentAccount(accountId, customerId);
+                break;
+                
+            default:
+                throw new IllegalArgumentException("Invalid account type.");
+        }
+        
+        /* Add initial balance if provided */
+        if (initialBalance > 0) 
+        {
+            account.deposit(initialBalance);
+        }
+        
+        accountRepository.add(account);
+    }
     
+    /*----------------  FR-05: Deposit ---------------- */
+    public void deposit(String accountId, double amount) 
+    {
+        /* Check account exists */
+        Account account = accountRepository.findById(accountId);
+        if (account == null) 
+        {
+            throw new IllegalArgumentException("Account not found.");
+        }
+        
+        /* Validate amount */
+        if (amount <= 0) 
+        {
+            throw new IllegalArgumentException("Amount must be positive.");
+        }
+        
+        account.deposit(amount);
+    }
     
+    /*----------------  FR-06: Withdraw ---------------- */
+    public void withdraw(String accountId, double amount) 
+    {
+        /* Check account exists */
+        Account account = accountRepository.findById(accountId);
+        if (account == null) 
+        {
+            throw new IllegalArgumentException("Account not found.");
+        }
+        
+        /* Validate amount */
+        if (amount <= 0) 
+        {
+            throw new IllegalArgumentException("Amount must be positive.");
+        }
+        
+        account.withdraw(amount);
+    }
     
- /* ---------------- FR Validate Customer data ---------------- */
+    /*----------------  FR-07: Transfer ---------------- */
+    public void transfer(String fromAccountId, String toAccountId, double amount) 
+    {
+        /* Check both accounts exist */
+        Account fromAccount = accountRepository.findById(fromAccountId);
+        Account toAccount = accountRepository.findById(toAccountId);
+        
+        if (fromAccount == null || toAccount == null) 
+        {
+            throw new IllegalArgumentException("One or both accounts not found.");
+        }
+        
+        /* Validate amount */
+        if (amount <= 0) 
+        {
+            throw new IllegalArgumentException("Amount must be positive.");
+        }
+        
+        /* Perform transfer */
+        fromAccount.withdraw(amount);
+        toAccount.deposit(amount);
+    }
+    
+    /*----------------  FR-08: View Account Details ---------------- */
+    public Account getAccount(String accountId) 
+    {
+        return accountRepository.findById(accountId);
+    }
+    
+    /*----------------  FR-09: List All Accounts ---------------- */
+    public List<Account> getAllAccounts() 
+    {
+        return accountRepository.findAll();
+    }
+    
+    /*----------------  FR-10: Account Queries ---------------- */
+    public double getAccountBalance(String accountId) 
+    {
+        Account account = accountRepository.findById(accountId);
+        if (account == null) 
+        {
+            throw new IllegalArgumentException("Account not found.");
+        }
+        return account.getBalance();
+    }
+    
+    /*----------------  FR-11: Transaction History ---------------- */
+    public void printTransactionHistory(String accountId) 
+    {
+        Account account = accountRepository.findById(accountId);
+        if (account == null) 
+        {
+            throw new IllegalArgumentException("Account not found.");
+        }
+        System.out.println("Transaction History for Account: " + accountId);
+        account.getTransactions().forEach(System.out::println);
+    }
+    
+    /* ----------------  Validate Customer data ---------------- */
 
     private void validateEmail(String email) 
     {
