@@ -14,6 +14,8 @@ import java.sql.SQLException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.List;
+import java.lang.Thread;
+import java.lang.InterruptedException;
 
 
 public class Main 
@@ -60,6 +62,9 @@ public class Main
 	    }
     }
     
+    /**
+     * Displays the main menu options to the user.
+     */
     private static void displayMenu() 
     {
         System.out.println("\n========== Bank Management System ==========");
@@ -78,6 +83,10 @@ public class Main
         System.out.print("Enter your choice (The NO.): ");
     }
 
+    /**
+     * Gets the user's menu choice from input.
+     * @return The selected menu option number, or -1 if invalid input
+     */
     private static int getUserChoice() 
     {
         try 
@@ -89,7 +98,12 @@ public class Main
             return -1;
         }
     }
-
+    
+    /**
+     * Handles the user's menu choice and executes the corresponding action.
+     * @param choiceCode The menu option number selected by the user
+     * @return true to continue the menu loop, false to exit
+     */
     private static boolean handleMenuChoice(int choiceCode) 
     {
     	MenuChoice choice = MenuChoice.fromCode(choiceCode);
@@ -135,7 +149,11 @@ public class Main
         return true;
     }
     
-    /* ----------------  FR-01: Create Customer  ---------------- */
+    
+    /**
+     * Creates a new customer with user-provided details.
+     * Implements FR-01: Create Customer.
+     */
     private static void createCustomer() 
     {
         try 
@@ -158,7 +176,10 @@ public class Main
         }
     }
 
-    /* ----------------  FR-02: View All Customers  ---------------- */
+    /**
+     * Displays all customers in the system.
+     * Implements FR-02: View All Customers.
+     */
     private static void viewAllCustomers() 
     {
         System.out.println("\n--- All Customers ---");
@@ -172,7 +193,10 @@ public class Main
         }
     }
 
-    /* ----------------  FR-04: Create Account  ---------------- */
+    /**
+     * Creates a new account for an existing customer.
+     * Implements FR-04: Create Account.
+     */
     private static void createAccount() 
     {
         try 
@@ -195,7 +219,11 @@ public class Main
         }
     }
 
-    /* ----------------  FR-05: Deposit Money  ---------------- */
+    /**
+     * Deposits money into an account.
+     * Implements FR-05: Deposit Money.
+     * Executes in a separate thread for concurrent processing (FR-14).
+     */
     private static void deposit() 
     {
         try 
@@ -206,15 +234,22 @@ public class Main
             System.out.print("Enter Amount: ");
             double amount = scanner.nextDouble();
 
-            bankService.deposit(accountId, amount);
+            /* perform deposit in a separate thread */
+            handleUserRequest("DEPOSIT", accountId, amount, null);
             System.out.println("✓ Deposit successful!");
         } catch (Exception e) 
         {
             System.out.println("Error: " + e.getMessage());
         }
     }
+    
+        
 
-    /* ----------------  FR-06: Withdraw Money  ---------------- */
+    /**
+     * Withdraws money from an account.
+     * Implements FR-06: Withdraw Money.
+     * Executes in a separate thread for concurrent processing (FR-14).
+     */
     private static void withdraw() 
     {
         try 
@@ -225,15 +260,20 @@ public class Main
             System.out.print("Enter Amount: ");
             double amount = scanner.nextDouble();
 
-            bankService.withdraw(accountId, amount);
-            System.out.println("✓ Withdrawal successful!");
-        } catch (Exception e) 
+            /* perform withdraw in a separate thread */
+            handleUserRequest("WITHDRAW", accountId, amount, null);
+        } 
+        catch (Exception e) 
         {
             System.out.println("Error: " + e.getMessage());
         }
     }
 
-    /* ----------------  FR-07: Transfer Money  ---------------- */
+    /**
+     * Transfers money between two accounts.
+     * Implements FR-07: Transfer Money.
+     * Executes in a separate thread for concurrent processing (FR-14).
+     */
     private static void transfer() 
     {
         try 
@@ -246,15 +286,18 @@ public class Main
             System.out.print("Enter Amount: ");
             double amount = scanner.nextDouble();
 
-            bankService.transfer(fromAccountId, toAccountId, amount);
-            System.out.println("✓ Transfer successful!");
+            /* perform withdraw in a separate thread */
+            handleUserRequest("TRANSFER", fromAccountId, amount, toAccountId);
         } catch (Exception e) 
         {
             System.out.println("Error: " + e.getMessage());
         }
     }
-    
-    /* ----------------  FR-08: View Account Details  ---------------- */
+
+    /**
+     * Displays detailed information about a specific account.
+     * Implements FR-08: View Account Details.
+     */
     private static void viewAccount() 
     {
         try 
@@ -279,7 +322,10 @@ public class Main
         }
     }
     
-    /* ----------------  FR-09: List All Accounts  ---------------- */
+    /**
+     * Lists all accounts in the system.
+     * Implements FR-09: List All Accounts.
+     */
     private static void listAccounts() 
     {
         System.out.println("\n--- All Accounts ---");
@@ -294,7 +340,10 @@ public class Main
     }
 
     
-    /* ----------------  FR-11: Transaction History  ---------------- */
+    /**
+     * Displays transaction history for a specific account or all accounts.
+     * Implements FR-11: Transaction History.
+     */
     private static void viewTransactions() 
     {
         try 
@@ -316,7 +365,10 @@ public class Main
         }
     }
 
-    /* ----------------  FR-10: Account Queries and Reporting  ---------------- */
+    /**
+     * Displays various account reports and filtering options.
+     * Implements FR-10: Account Queries and Reporting.
+     */
     private static void viewReports() 
 	{
 	    boolean reportingMenu = true;
@@ -429,4 +481,46 @@ public class Main
                                                        ": " + account.getBalance()));
         }
     }
+    
+    
+    /*----------------  FR-14: Concurrent Transaction ---------------- */
+    /**
+     * Handles user requests by executing them in a separate thread.
+     * Implement FR-14 This enables concurrent processing of transactions.
+     * @param operation The type of operation (DEPOSIT, WITHDRAW, or TRANSFER)
+     * @param accountId The account involved in the operation
+     * @param amount The amount to process
+     * @param toAccountId The destination account ID (used only for transfers)
+     */
+    public static void handleUserRequest(String operation, String accountId, double amount, String toAccountId) throws InterruptedException
+    {
+    	Thread handelThread = new Thread(() -> {
+            try {
+                switch (operation.toUpperCase()) 
+                {
+                    case "DEPOSIT":
+                        bankService.deposit(accountId, amount);
+                        System.out.println("\n[✓] Deposit of " + amount + " to " + accountId + " completed.");
+                        break;
+                    case "WITHDRAW":
+                        bankService.withdraw(accountId, amount);
+                        System.out.println("\n[✓] Withdrawal of " + amount + " from " + accountId + " completed.");
+                        break;
+                    case "TRANSFER":
+                        bankService.transfer(accountId, toAccountId, amount);
+                        System.out.println("\n[✓] Transfer of " + amount + " from " + accountId + " to " + toAccountId + " completed.");
+                        break;
+                    default:
+                        System.out.println("[!] Unknown operation: " + operation);
+                }
+            } 
+            catch (Exception e) 
+            {
+                System.err.println("\n[✗] Operation failed: " + e.getMessage());
+            }
+        });
+    	handelThread.start();
+        handelThread.join();
+    }
+    
 }

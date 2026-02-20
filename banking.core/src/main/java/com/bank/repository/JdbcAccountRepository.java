@@ -137,7 +137,7 @@ public class JdbcAccountRepository implements Repository<Account>
             {
                 Transaction transaction = new Transaction(
                     rs.getString("id"),
-                    TransactionType.valueOf(rs.getString("type")),
+                    TransactionType.fromString(rs.getString("type")),
                     rs.getDouble("amount"),
                     rs.getString("timestamp"),
                     rs.getString("description")

@@ -114,8 +114,16 @@ public class BankService
             throw new IllegalArgumentException("Amount must be positive.");
         }
         
-        account.deposit(amount);
-        accountRepository.save(account);
+        account.getLock().lock(); 
+        try 
+        {
+            account.deposit(amount);
+            accountRepository.save(account);
+        } 
+        finally 
+        {
+            account.getLock().unlock(); 
+        }
     }
     
     /*----------------  FR-06: Withdraw ---------------- */
@@ -134,7 +142,17 @@ public class BankService
             throw new IllegalArgumentException("Amount must be positive.");
         }
         
-        accountRepository.save(account);  
+        
+        account.getLock().lock();
+        try 
+        {
+            account.withdraw(amount);
+            accountRepository.save(account); 
+        } finally 
+        {
+            account.getLock().unlock();
+        }
+        
     }
     
     /*----------------  FR-07: Transfer ---------------- */
@@ -143,26 +161,37 @@ public class BankService
         /* Check both accounts exist */
         Account fromAccount = accountRepository.findById(fromAccountId);
         Account toAccount = accountRepository.findById(toAccountId);
-        
+
         if (fromAccount == null || toAccount == null) 
         {
             throw new IllegalArgumentException("One or both accounts not found.");
         }
-        
+
         /* Validate amount */
         if (amount <= 0) 
         {
             throw new IllegalArgumentException("Amount must be positive.");
         }
-        
+
+        /* the look sequence to prevent the DeadLock */
+        Account first = fromAccount.getId().compareTo(toAccount.getId()) < 0 ? fromAccount : toAccount;
+        Account second = first == fromAccount ? toAccount : fromAccount;
+
+        /*----------------  FR-14: Concurrent Transaction ---------------- */
         /* Perform transfer */
-        fromAccount.withdraw(amount);
-        toAccount.deposit(amount);
-        
-        accountRepository.save(fromAccount);  
-        accountRepository.save(toAccount);    
-        
+        first.getLock().lock();
+        second.getLock().lock();
+        try {
+            fromAccount.withdraw(amount);  // استخدم fromAccount
+            toAccount.deposit(amount);     // استخدم toAccount
+            accountRepository.save(fromAccount);  // استخدم save بدل update
+            accountRepository.save(toAccount);
+        } finally {
+            second.getLock().unlock();
+            first.getLock().unlock();
+        }
     }
+    
     
     /*----------------  FR-08: View Account Details ---------------- */
     public Account getAccount(String accountId) 
@@ -277,11 +306,7 @@ public class BankService
         System.out.println("\n--- Transactions for Account: " + accountId + " ---");
         account.getTransactions().forEach(System.out::println);
     }
-    
 }
-
-
-
 
 
 
