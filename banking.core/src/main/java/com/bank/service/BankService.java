@@ -408,7 +408,7 @@ public class BankService
         {
             String statement = generateAccountStatementString(accountId);
             String filename = "account_statement_" + accountId + ".txt";
-            
+            /* try with resource toprevent resource leak  it will automatically close the file */
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) 
             {
                 writer.write(statement);
@@ -439,7 +439,7 @@ public class BankService
             System.out.println("[!] No accounts found to generate statements.");
             return;
         }
-
+        /* try with resource toprevent resource leak  it will automatically close the file */
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("all_accounts_statements.txt"))) 
         {
             writer.write("========== All Accounts Transaction Statements ==========\n\n");
@@ -470,7 +470,8 @@ public class BankService
     }
 
     /**
-     * دالة مساعدة تولد كشف الحساب كنص (String) بدلاً من الطباعة.
+     * Helper method to generate account statement for one account
+     * @param accountId The ID of the account to generate the statement for
      */
     private String generateAccountStatementString(String accountId) 
     {
@@ -511,6 +512,7 @@ public class BankService
         double totalBalance = accounts.stream().mapToDouble(Account::getBalance).sum();
         long totalAccounts = accounts.size();
 
+        /* try with resource toprevent resource leak  it will automatically close the file */
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("summary_report.txt"))) 
         {
             writer.write("============= Bank Summary Report =============\n");
