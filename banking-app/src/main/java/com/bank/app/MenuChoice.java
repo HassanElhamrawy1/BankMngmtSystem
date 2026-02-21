@@ -12,7 +12,9 @@ public enum MenuChoice
     LIST_ACCOUNTS(8, "List Accounts"),
     VIEW_REPORTS(9, "List Reports"),
     VIEW_TRANSACTIONS(10, "List Transactions"),
-    EXIT(11, "Exit"),
+    GENERATE_ACCOUNTS_STATEMENT(11, "Generate Accounts Statement"),
+    GENERATE_SUMMARY_REPORT(12, "Generate Summary Report"),
+    EXIT(13, "Exit"),
     INVALID(-1, "Invalid Choice");
 
     private final int code;

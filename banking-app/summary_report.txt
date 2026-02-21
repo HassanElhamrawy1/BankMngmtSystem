@@ -1,0 +1,5 @@
+========== Bank Summary Report ==========
+Total Number of Accounts: 2022
+Total Balance in Bank: 1034124863.50
+Richest Account: ACC-C00614-1 with 999807.18
+=========================================

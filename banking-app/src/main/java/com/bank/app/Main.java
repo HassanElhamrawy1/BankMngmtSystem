@@ -78,7 +78,9 @@ public class Main
         System.out.println("8. List Accounts");
         System.out.println("9. List Reports");
         System.out.println("10. List Transactions");
-        System.out.println("11. Exit");
+        System.out.println("11. Generate Accounts Statement");
+        System.out.println("12. Generate Summary Report");
+        System.out.println("13. Exit");
         System.out.println("==========================================");
         System.out.print("Enter your choice (The NO.): ");
     }
@@ -139,7 +141,14 @@ public class Main
                 break;
             case VIEW_TRANSACTIONS:
                 viewTransactions();
-                break;    
+                break;  
+            case GENERATE_ACCOUNTS_STATEMENT:
+                generateAccountStatement();
+                break;
+            case GENERATE_SUMMARY_REPORT:
+                bankService.generateSummaryReport();
+                break; 
+                
             case EXIT:
                 return false; /* Exit */
             case INVALID:
@@ -357,7 +366,7 @@ public class Main
                 bankService.printAllTransactions();
             } else 
             {
-                bankService.printAccountTransactions(input);
+                bankService.printTransactionHistory(input);
             }
         } catch (Exception e) 
         {
@@ -521,6 +530,24 @@ public class Main
         });
     	handelThread.start();
         handelThread.join();
+    }
+    
+    /**
+     * Generates a detailed statement for a specific account.
+     * Implements FR-17: Account Statement Generation.
+     */
+    public static void generateAccountStatement()
+    {
+    	scanner.nextLine();
+    	System.out.print("Enter Account ID (or 'all' for all accounts): ");
+        String accId = scanner.nextLine().trim();
+        if ("all".equalsIgnoreCase(accId)) 
+        {
+            bankService.generateAllAccountsStatement();
+        } else 
+        {
+            bankService.generateAccountStatement(accId);
+        }
     }
     
 }
