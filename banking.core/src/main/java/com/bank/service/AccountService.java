@@ -9,7 +9,7 @@ public class AccountService
 {
     private Repository<Account> accountRepository;
 
-    // Constructor: inject accountRepository
+    /* Constructor: inject accountRepository */
     public AccountService(Repository<Account> accountRepository) 
     {
         this.accountRepository = accountRepository;
