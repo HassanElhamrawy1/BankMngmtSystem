@@ -1,5 +1,10 @@
+/*
+ * JDBC-based implementation of the Repository interface for Account entities.
+ * Stores and retrieves account data (including transactions) from an SQLite database.
+ * Implements FR-12: Save Account Data and FR-13: Load Account Data.
+ */
 package com.bank.repository;
-/* Implements Repository, stores data in an Database. */
+
 import com.bank.model.Account;
 import com.bank.model.SavingsAccount;
 import com.bank.model.CurrentAccount;
@@ -11,14 +16,25 @@ import java.util.List;
 
 public class JdbcAccountRepository implements Repository<Account> 
 {
+	/* Database connection URL for SQLite */
     private static final String DB_URL = "jdbc:sqlite:bank-system.db";
 
+    /**
+     * Establishes a connection to the SQLite database.
+     * @return A new database connection
+     * @throws SQLException if a database access error occurs
+     */
     private Connection getConnection() throws SQLException 
     {
         return DriverManager.getConnection(DB_URL);
     }
     
     /* ---------------- FR 12 Create Customers ---------------- */
+    /**
+     * Saves an account and its associated transactions to the database.
+     * If the account ID already exists, it will be replaced.
+     * @param account The account entity to save
+     */
     @Override
     public void save(Account account) 
     {
@@ -41,6 +57,10 @@ public class JdbcAccountRepository implements Repository<Account>
     }
     
     /* ---------------- FR 12 Save Account Data ---------------- */
+    /**
+     * Saves all transactions associated with an account.
+     * @param account The account whose transactions are to be saved
+     */
     private void saveTransactions(Account account) 
     {
         String sql = "INSERT OR REPLACE INTO transactions (id, account_id, type, amount, timestamp, description) VALUES (?, ?, ?, ?, ?, ?)";
@@ -65,6 +85,11 @@ public class JdbcAccountRepository implements Repository<Account>
     }
     
     /* ---------------- FR 13 Load Account Data ---------------- */
+    /**
+     * Finds an account by ID from the database and loads its transactions.
+     * @param id The unique identifier of the account
+     * @return The account if found, or null if not found
+     */
     @Override
     public Account findById(String id) 
     {
@@ -86,7 +111,12 @@ public class JdbcAccountRepository implements Repository<Account>
         }
         return null;
     }
-
+    
+    
+    /**
+     * Retrieves all accounts from the database and loads their transactions.
+     * @return A list of all accounts
+     */
     @Override
     public List<Account> findAll() 
     {
@@ -108,7 +138,13 @@ public class JdbcAccountRepository implements Repository<Account>
         }
         return accounts;
     }
-
+    
+    /**
+     * Helper method to instantiate the correct account type from a database row.
+     * @param rs The ResultSet containing account data
+     * @return A new Account instance (Savings or Current)
+     * @throws SQLException if a database access error occurs
+     */
     private Account createAccount(ResultSet rs) throws SQLException 
     {
         String id = rs.getString("id");
@@ -125,6 +161,10 @@ public class JdbcAccountRepository implements Repository<Account>
         }
     }
 
+    /**
+     * Loads all transactions associated with an account from the database.
+     * @param account The account to load transactions for
+     */
     private void loadTransactions(Account account) 
     {
         String sql = "SELECT * FROM transactions WHERE account_id = ?";
@@ -150,6 +190,10 @@ public class JdbcAccountRepository implements Repository<Account>
         }
     }
 
+    /**
+     * Deletes an account from the database by ID.
+     * @param id The unique identifier of the account to delete
+     */
     @Override
     public void delete(String id) 
     {

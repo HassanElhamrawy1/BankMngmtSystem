@@ -1,4 +1,4 @@
-/**
+/*
  * Abstract class representing a Bank Account.
  * Contains common properties like id, customerId, balance, and transactions.
  * Provides base implementation for deposit and defines abstract withdraw method.
@@ -20,17 +20,24 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class Account implements Identifiable 
 {
-
+	
+	/* Unique identifier for the account */
     protected String id;
+    /* ID of the customer who owns this account */
     protected String customerId;
+    /* Current account balance */
     protected double balance;
+    /* List of all transactions for this account */
     protected List<Transaction> transactions;
     
+    /* Thread lock for concurrent access control */
     private final transient Lock lock = new ReentrantLock();
     
     /**
      * Constructor to initialize account with ID and associated customer ID.
      * Initializes balance to 0.0 and creates a thread-safe list for transactions.
+     * @param id          Unique account identifier
+     * @param customerId  ID of the customer who owns this account
      */
     public Account(String id, String customerId) 
     {
@@ -40,17 +47,29 @@ public abstract class Account implements Identifiable
         this.transactions = new ArrayList<>();
     }
 
+    /**
+     * Returns the unique identifier of the account.
+     * @return The account ID
+     */
     @Override
     public String getId() 
     {
         return id;
     }
 
+    /**
+     * Returns the ID of the customer who owns this account.
+     * @return The customer ID
+     */
     public String getCustomerId() 
     {
         return customerId;
     }
 
+    /*
+     * Returns the current account balance.
+     * @return The account balance
+     */
     public double getBalance() 
     {
         return balance;
@@ -59,7 +78,7 @@ public abstract class Account implements Identifiable
     /**
      * Adds funds to the account balance and records the transaction.
      * Thread-safe due to synchronized keyword.
-     * Implement FR-05: Deposit Money
+     * Implements FR-05: Deposit Money
      * @param amount the amount to deposit (must be positive)
      * @throws IllegalArgumentException if amount is not positive
      */
@@ -88,19 +107,20 @@ public abstract class Account implements Identifiable
     
     
     /**
-     * Helper method to create and add a transaction record to the list.
-     * Uses UUID to generate a unique transaction ID.
-     * Implements FR-14: Concurrent Transactions
+     * Helper method to add an existing transaction record to the list.
+     * Implements FR-14: Concurrent Transactions.
      *
-     * @param type the type of transaction (DEPOSIT, WITHDRAW, TRANSFER)
-     * @param amount the monetary amount involved
-     * @param description a brief description of the transaction
+     * @param transaction the transaction object to be added to the account
      */
     public synchronized void addTransaction(Transaction transaction) 
     {
         transactions.add(transaction);
     }
     
+    /**
+     * Returns the lock object for this account to handle concurrent access.
+     * @return the ReentrantLock instance for this account
+     */
     public Lock getLock() 
     {
         return lock;

@@ -1,3 +1,9 @@
+/**
+ * Enumeration representing the main menu options in the Bank Management System.
+ * Each constant corresponds to a specific user action and menu item.
+ * Used to map user input (numeric codes) to actions in the main application loop.
+ */
+
 package com.bank.app;
 
 public enum MenuChoice 
@@ -20,23 +26,41 @@ public enum MenuChoice
     private final int code;
     private final String description;
 
+    /**
+     * Constructs a MenuChoice enum constant with the specified code and description.
+     * @param code The numeric code representing the menu option
+     * @param description The human-readable description of the menu option
+     */
+    
     MenuChoice(int code, String description) 
     {
         this.code = code;
         this.description = description;
     }
 
+    /**
+     * Returns the numeric code associated with this menu choice.
+     * @return The numeric code
+     */
     public int getCode() 
     {
         return code;
     }
 
+    /**
+     * Returns the human-readable description of this menu choice.
+     * @return The description string
+     */
     public String getDescription() 
     {
         return description;
     }
 
-    /* Get enum from code */
+    /**
+     * Maps a numeric code to its corresponding MenuChoice enum constant.
+     * @param code The numeric code to look up
+     * @return The matching MenuChoice constant, or INVALID if no match is found
+     */
     public static MenuChoice fromCode(int code) 
     {
         for (MenuChoice choice : MenuChoice.values()) 

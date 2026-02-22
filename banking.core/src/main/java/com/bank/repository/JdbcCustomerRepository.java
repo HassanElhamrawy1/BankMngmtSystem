@@ -1,4 +1,8 @@
-/* Implements Repository, stores data in an Database. */
+/*
+ * JDBC-based implementation of the Repository interface for Customer entities.
+ * Stores and retrieves customer data from an SQLite database.
+ * Implements FR-12: Save Customers Data and FR-13: Load Customers Data.
+ */
 package com.bank.repository;
 
 import com.bank.model.Customer;
@@ -8,13 +12,23 @@ import java.util.List;
 
 public class JdbcCustomerRepository implements Repository<Customer> 
 {
+	/* Database connection URL for SQLite */
     private static final String DB_URL = "jdbc:sqlite:bank-system.db";
 
+    /**
+     * Establishes a connection to the SQLite database.
+     * @return A new database connection
+     * @throws SQLException if a database access error occurs
+     */
     private Connection getConnection() throws SQLException 
     {
         return DriverManager.getConnection(DB_URL);
     }
     /* ---------------- FR 12 Save Customers Data ---------------- */
+    /**
+     * Saves a customer to the database. If the customer ID already exists, it will be replaced.
+     * @param customer The customer entity to save
+     */
     @Override
     public void save(Customer customer) 
     {
@@ -34,6 +48,11 @@ public class JdbcCustomerRepository implements Repository<Customer>
     }
 
     /* ---------------- FR 13 Load Customers Data ---------------- */
+    /**
+     * Finds a customer by ID from the database.
+     * @param id The unique identifier of the customer
+     * @return The customer if found, or null if not found
+     */
     @Override
     public Customer findById(String id) 
     {
@@ -60,6 +79,10 @@ public class JdbcCustomerRepository implements Repository<Customer>
     }
     
     /* ---------------- FR 13 Load Customers Data ---------------- */
+    /**
+     * Retrieves all customers from the database.
+     * @return A list of all customers
+     */
     @Override
     public List<Customer> findAll() 
     {
@@ -85,6 +108,10 @@ public class JdbcCustomerRepository implements Repository<Customer>
         return customers;
     }
 
+    /**
+     * Deletes a customer from the database by ID.
+     * @param id The unique identifier of the customer to delete
+     */
     @Override
     public void delete(String id) 
     {

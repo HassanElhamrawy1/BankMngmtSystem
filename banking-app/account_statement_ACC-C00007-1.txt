@@ -1,0 +1,10 @@
+========== Account Statement for ACC-C00007-1 ==========
+Date                 Type            Amount       Description                   
+------------------------------------------------------------
+2025-08-05 16:34:30  Transfer        3971.14      TRANSFER transaction for account ACC-C00007-1
+2025-12-05 12:58:50  Transfer        246.63       TRANSFER transaction for account ACC-C00007-1
+2025-03-04 00:06:32  Deposit         2683.77      DEPOSIT transaction for account ACC-C00007-1
+2025-04-03 01:54:34  Withdraw        1495.59      WITHDRAW transaction for account ACC-C00007-1
+2025-04-28 04:47:17  Transfer        4909.01      TRANSFER transaction for account ACC-C00007-1
+------------------------------------------------------------
+Current Balance: 51887.90

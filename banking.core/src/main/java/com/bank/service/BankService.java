@@ -1,5 +1,8 @@
-/* Contains high-level business logic (e.g., create customer, transfer between accounts). */
-
+/*
+ * Service class that provides high-level business logic for the Bank Management System.
+ * Handles customer and account operations, transactions, reporting, and data validation.
+ * Implements multiple Functional Requirements including FR-01 through FR-18.
+ */
 package com.bank.service;
 
 import com.bank.model.Customer;
@@ -22,17 +25,24 @@ import java.util.regex.Pattern;
 
 public class BankService 
 {
-
+	/* Repository for customer data access */
     private Repository<Customer> customerRepository;
+    /* Repository for account data access */
     private Repository<Account> accountRepository;
+    /* Service for account-specific operations */
     private AccountService accountService;
 
-    /* Simple regex patterns */
+    /* Regex pattern for email validation */
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
-
+    /* Regex pattern for phone number validation */
     private static final Pattern PHONE_PATTERN = Pattern.compile("^\\+?[0-9]{8,15}$");
 
-    
+    /**
+     * Constructs a BankService with the specified customer and account repositories.
+     * Initializes the AccountService dependency.
+     * @param customerRepository Repository for customer data operations
+     * @param accountRepository Repository for account data operations
+     */
     public BankService(Repository<Customer> customerRepository, Repository<Account> accountRepository) 
     {
         this.customerRepository = customerRepository;
@@ -47,6 +57,7 @@ public class BankService
      * @param name        The full name of the customer
      * @param email       The email address (must be valid format)
      * @param phoneNumber The phone number (must be valid format)
+     * @throws IllegalArgumentException if customer ID already exists or data is invalid
      */
     public void createCustomer(String id, String name, String email, String phoneNumber) 
     {
@@ -66,6 +77,7 @@ public class BankService
     /**
      * Retrieves a list of all customers in the system.
      * Implements FR-02: View All Customers.
+     * @return List of all customers
      */
     public List<Customer> getAllCustomers() 
     {
@@ -73,9 +85,12 @@ public class BankService
     }
     
     /**
-     * Creates a new account for a customer.
+     * Creates a new account for a customer with zero initial balance.
      * Implements FR-04: Create Account.
      * Supports both Savings and Current account types.
+     * @param accountId      The unique identifier for the new account
+     * @param customerId     The ID of the customer who owns the account
+     * @param type           The type of account (SAVINGS or CURRENT)
      */
     public void createAccount(String accountId, String customerId, String type) 
     {
@@ -89,6 +104,7 @@ public class BankService
      * @param customerId     The ID of the customer who owns the account
      * @param type           The type of account (SAVINGS or CURRENT)
      * @param initialBalance The starting balance for the account
+     * @throws IllegalArgumentException if account already exists, customer doesn't exist, or invalid type
      */
     public void createAccount(String accountId, String customerId, String type, double initialBalance) 
     {
@@ -134,6 +150,7 @@ public class BankService
      * Implements FR-05: Deposit Money and FR-14: Concurrency.
      * @param accountId The ID of the account to deposit into
      * @param amount    The positive amount to be deposited
+     * @throws IllegalArgumentException if account not found or amount is not positive
      */
     public void deposit(String accountId, double amount) 
     {
@@ -153,7 +170,7 @@ public class BankService
         account.getLock().lock(); 
         try 
         {
-            account.deposit(amount);
+        	accountService.deposit(accountId, amount);
             accountRepository.save(account);
         } 
         finally 
@@ -167,6 +184,7 @@ public class BankService
      * Implements FR-06: Withdraw Money and FR-14: Concurrency.
      * @param accountId The ID of the account to withdraw from
      * @param amount    The positive amount to be withdrawn
+     * @throws IllegalArgumentException if account not found or amount is not positive
      */
     public void withdraw(String accountId, double amount) 
     {
@@ -187,7 +205,7 @@ public class BankService
         account.getLock().lock();
         try 
         {
-            account.withdraw(amount);
+        	accountService.withdraw(accountId, amount);
             accountRepository.save(account); 
         } finally 
         {
@@ -202,6 +220,7 @@ public class BankService
      * @param fromAccountId The source account ID
      * @param toAccountId   The destination account ID
      * @param amount        The amount to transfer
+     * @throws IllegalArgumentException if accounts not found or amount is not positive
      */
     public void transfer(String fromAccountId, String toAccountId, double amount) 
     {
@@ -228,9 +247,11 @@ public class BankService
         /* Perform transfer */
         first.getLock().lock();
         second.getLock().lock();
-        try {
-            fromAccount.withdraw(amount);  // استخدم fromAccount
-            toAccount.deposit(amount);     // استخدم toAccount
+        try {  
+            accountService.withdraw(fromAccountId, amount); 
+            accountService.deposit(toAccountId, amount);  
+            
+            
             accountRepository.save(fromAccount);  // استخدم save بدل update
             accountRepository.save(toAccount);
         } finally {
@@ -243,6 +264,8 @@ public class BankService
     /**
      * Retrieves account details by ID.
      * Implements FR-08: View Account.
+     * @param accountId The ID of the account to retrieve
+     * @return The account object, or null if not found
      */
     public Account getAccount(String accountId) 
     {
@@ -252,6 +275,7 @@ public class BankService
     /**
      * Retrieves a list of all accounts in the system.
      * Implements FR-09: List Accounts.
+     * @return List of all accounts
      */
     public List<Account> getAllAccounts() 
     {
@@ -259,10 +283,12 @@ public class BankService
     }
     
     
-    /* ----------------  Validate Customer data ---------------- */
+    /* ----------------  FR-03: Validate Customer data ---------------- */
     /**
      * Validate customer email format.
      * Implements FR-03: Validate Customer data.
+     * @param email The email address to validate
+     * @throws IllegalArgumentException if email format is invalid
      */
     private void validateEmail(String email) 
     {
@@ -275,7 +301,8 @@ public class BankService
     /**
      * Validate customer phone format.
      * Implements FR-03: Validate Customer data.
-     * @param phone phone number which need to be validated
+     * @param phone The phone number to validate
+     * @throws IllegalArgumentException if phone format is invalid
      */
     private void validatePhone(String phone) 
     {
@@ -301,7 +328,8 @@ public class BankService
     /**
      * Filters accounts with balance less than or equal to maxBalance.
      * Implements FR-10: Account Queries.
-     * @param maxBalance MaxBalance to filter the account with 
+     * @param maxBalance The maximum balance threshold
+     * @return A list of accounts matching the criteria
      */
     public List<Account> filterAccountsByMaxBalance(double maxBalance) 
     {
@@ -312,8 +340,9 @@ public class BankService
     /**
      * Filters accounts within a specific balance range.
      * Implements FR-10: Account Queries.
-     * * @param minBalance MinBalance to filter the account with 
-     * * @param maxBalance MaxBalance to filter the account with 
+     * @param minBalance The minimum balance threshold
+     * @param maxBalance The maximum balance threshold
+     * @return A list of accounts matching the criteria
      */
     public List<Account> filterAccountsByBalanceRange(double minBalance, double maxBalance) 
     {
@@ -325,6 +354,7 @@ public class BankService
     /**
      * Calculates the total balance across all accounts.
      * Implements FR-10: Account Queries.
+     * @return The total balance of all accounts
      */
     public double getTotalBalance() 
     {
@@ -334,6 +364,7 @@ public class BankService
     /**
      * Finds the account with the highest balance.
      * Implements FR-10: Account Queries.
+     * @return The account with the highest balance, or null if no accounts exist
      */
     public Account getHighestBalanceAccount() 
     {
@@ -344,6 +375,7 @@ public class BankService
     /**
      * Counts the total number of accounts.
      * Implements FR-10: Account Queries.
+     * @return The total number of accounts
      */
     public int getTotalAccounts() 
     {
@@ -353,7 +385,9 @@ public class BankService
     /**
      * Gets the current balance of an account.
      * Implements FR-10: Account Queries.
-     * * @param accountId The ID of the account to get account balance
+     * @param accountId The ID of the account to get account balance
+     * @return The current balance of the account
+     * @throws IllegalArgumentException if account not found
      */
     public double getAccountBalance(String accountId) 
     {
@@ -383,7 +417,8 @@ public class BankService
     /**
      * Prints the transaction history of a specific account.
      * Implements FR-11: Transaction History.
-     * * @param accountId The ID of the account to print transaction history
+     * @param accountId The ID of the account to print transaction history
+     * @throws IllegalArgumentException if account not found
      */
     public void printTransactionHistory(String accountId) 
     {
@@ -398,7 +433,7 @@ public class BankService
     
     /* ---------------- FR-17: Account Statement Generation ---------------- */
     /**
-     * Generates a detailed transaction statement for a specific account.
+     * Generates a detailed transaction statement for a specific account and saves it to a file.
      * Implements FR-17: Account Statement Generation.
      * @param accountId The ID of the account to generate the statement for
      */
@@ -427,8 +462,8 @@ public class BankService
     }
     
     /**
-     * Generates statements for all accounts.
-     * Implements FR-17: Account Statement Generation and save the data into text file.
+     * Generates statements for all accounts and saves them to a single file.
+     * Implements FR-17: Account Statement Generation.
      */
     public void generateAllAccountsStatement() 
     {
@@ -470,8 +505,10 @@ public class BankService
     }
 
     /**
-     * Helper method to generate account statement for one account
+     * Helper method to generate account statement for one account as a String.
      * @param accountId The ID of the account to generate the statement for
+     * @return Formatted account statement as a String
+     * @throws IllegalArgumentException if account not found
      */
     private String generateAccountStatementString(String accountId) 
     {
@@ -503,7 +540,7 @@ public class BankService
     
     /* ---------------- FR-18: Bank Summary Reporting ---------------- */
     /**
-     * Generates a summary report of the bank's status and save it into file.
+     * Generates a summary report of the bank's status and saves it to a file.
      * Implements FR-18: Bank Summary Reporting.
      */
     public void generateSummaryReport() 

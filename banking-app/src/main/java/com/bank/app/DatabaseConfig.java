@@ -1,4 +1,8 @@
-/* Configuring the database (connect, initialize and close connection) */
+/**
+ * Configuration class for managing the SQLite database connection and initialization.
+ * Responsible for establishing connection, creating required tables, and closing connection.
+ * Implements FR-12: Initialize Database and FR-13: Load Data.
+ */
 package com.bank.app;
 
 import java.sql.Connection;
@@ -8,9 +12,17 @@ import java.sql.Statement;
 
 public class DatabaseConfig 
 {
+	/* SQLite database URL for the bank system */
     private static final String DB_URL = "jdbc:sqlite:bank-system.db";
+    /* Singleton database connection instance */
     private static Connection connection;
 
+    /**
+     * Returns the singleton database connection instance.
+     * If no connection exists or it's closed, creates a new connection.
+     * @return Active database connection
+     * @throws SQLException if a database access error occurs
+     */
     public static Connection getConnection() throws SQLException 
     {
         if (connection == null || connection.isClosed()) 
@@ -19,7 +31,13 @@ public class DatabaseConfig
         }
         return connection;
     }
-
+    
+    /**
+     * Initializes the database by creating required tables if they don't exist.
+     * Creates tables for customers, accounts, and transactions with proper relationships.
+     * Implements FR-12: Initialize Database and FR-13: Load Data.
+     * @throws SQLException if a database access error occurs
+     */
     public static void initializeDatabase() throws SQLException 
     {
         try (Connection conn = getConnection();
@@ -54,6 +72,11 @@ public class DatabaseConfig
         }
     }
 
+    /**
+     * Closes the database connection if it's open.
+     * Implements FR-15: Graceful Shutdown.
+     * @throws SQLException if a database access error occurs
+     */
     public static void closeConnection() throws SQLException 
     {
         if (connection != null && !connection.isClosed()) 

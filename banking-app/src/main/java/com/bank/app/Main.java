@@ -1,5 +1,9 @@
-/* Main class to run the application; creates customers and accounts, 
- * performs deposits/withdrawals, and displays account info.           */
+/**
+ * Main application class for the Bank Management System.
+ * Responsible for initializing the database, setting up services,
+ * handling user input via console menu, and managing graceful shutdown.
+ * Implements FR-12: Initialize Database, FR-13: Load Data, FR-15: Graceful Shutdown.
+ */
 package com.bank.app;
 
 import com.bank.model.Customer;
@@ -25,6 +29,12 @@ public class Main
     /* Create scanner */
     private static Scanner scanner;
 
+    /**
+     * Entry point of the application.
+     * Initializes database, repositories, and services.
+     * Starts the main menu loop and handles graceful shutdown.
+     * @param args Command-line arguments (not used)
+     */
     public static void main(String[] args) 
     {
     	/* ----------------  FR-12 & FR-13: Initialize Database and Load Data  ---------------- */
