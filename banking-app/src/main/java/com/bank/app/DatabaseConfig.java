@@ -13,7 +13,7 @@ import java.sql.Statement;
 public class DatabaseConfig 
 {
 	/* SQLite database URL for the bank system */
-    private static final String DB_URL = "jdbc:sqlite:bank-system.db";
+	private static final String DB_URL = "jdbc:sqlite:bank-system.db?busy_timeout=5000";
     /* Singleton database connection instance */
     private static Connection connection;
 

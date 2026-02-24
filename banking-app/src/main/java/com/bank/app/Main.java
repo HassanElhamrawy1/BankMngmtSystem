@@ -10,6 +10,8 @@ import com.bank.model.Customer;
 import com.bank.model.Account;
 
 import com.bank.repository.Repository;
+import com.bank.repository.CustomerRepository;
+import com.bank.repository.AccountRepository;
 import com.bank.repository.JdbcCustomerRepository;
 import com.bank.repository.JdbcAccountRepository;
 import com.bank.service.BankService;
@@ -44,8 +46,8 @@ public class Main
             DatabaseConfig.initializeDatabase();
 
             /* Load repositories from database */
-            Repository<Customer> customerRepository = new JdbcCustomerRepository();
-            Repository<Account> accountRepository = new JdbcAccountRepository();
+            CustomerRepository customerRepository = new JdbcCustomerRepository();
+            AccountRepository accountRepository = new JdbcAccountRepository();
 
             /* Initialize services */
             bankService = new BankService(customerRepository, accountRepository);

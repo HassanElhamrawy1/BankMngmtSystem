@@ -14,10 +14,11 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JdbcAccountRepository implements Repository<Account> 
+public class JdbcAccountRepository implements AccountRepository 
 {
 	/* Database connection URL for SQLite */
-    private static final String DB_URL = "jdbc:sqlite:bank-system.db";
+	/* Add a timeout so SQLite waits instead of locking immediately */
+	private static final String DB_URL = "jdbc:sqlite:bank-system.db?busy_timeout=5000";
 
     /**
      * Establishes a connection to the SQLite database.
@@ -206,6 +207,92 @@ public class JdbcAccountRepository implements Repository<Account>
         } catch (SQLException e) 
         {
             System.err.println("Error deleting account: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Find account by id using the provided Connection.
+     * This method participates in the caller-managed transaction: it does NOT commit or rollback the connection.
+     *
+     * @param conn The JDBC connection to use (must not be null)
+     * @param id   The account id to search for
+     * @return The Account instance if found, or null if not found
+     * @throws RuntimeException wrapping SQLException on DB error
+     */
+    @Override
+    public Account findById(Connection conn, String id) 
+    {
+        final String sql = "SELECT id, customer_id, balance, type FROM accounts WHERE id = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) 
+        {
+            ps.setString(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) 
+            {
+                if (!rs.next()) {
+                    return null;
+                }
+
+                String accId = rs.getString("id");
+                String customerId = rs.getString("customer_id");
+                double balance = rs.getDouble("balance");
+
+                String type = null;
+                try 
+                {
+                    type = rs.getString("type");
+                } 
+                catch (SQLException ignore) 
+                {
+                    /* If column not present, keep type null and fall back to default account type */
+                }
+
+                Account account;
+                if (type != null && "CURRENT".equalsIgnoreCase(type.trim())) {
+                    account = new CurrentAccount(accId, customerId, balance);
+                } 
+                else 
+                {
+                    /* Default to SavingsAccount when type is unknown or missing */
+                    account = new SavingsAccount(accId, customerId, balance);
+                }
+
+                return account;
+            }
+        } catch (SQLException e) 
+        {
+            throw new RuntimeException("Error finding account by id: " + id, e);
+        }
+    }
+
+    /**
+     * Update persistent fields of the given account using the provided Connection.
+     * This update participates in the caller-managed transaction and must not commit/rollback the connection.
+     *
+     * @param conn    The JDBC connection to use (must not be null)
+     * @param account The account to persist (must not be null)
+     * @throws RuntimeException if a database error occurs or unexpected number of rows updated
+     */
+    @Override
+    public void update(Connection conn, Account account) 
+    {
+        final String sql = "UPDATE accounts SET balance = ? WHERE id = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) 
+        {
+            ps.setDouble(1, account.getBalance());
+            ps.setString(2, account.getId());
+
+            int rows = ps.executeUpdate();
+            if (rows != 1) 
+            {
+                throw new RuntimeException("Update affected " + rows + " rows for account id=" + account.getId());
+            }
+        } 
+        catch (SQLException e) 
+        {
+            throw new RuntimeException("Error updating account id: " + account.getId(), e);
         }
     }
 }

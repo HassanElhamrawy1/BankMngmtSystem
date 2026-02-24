@@ -10,7 +10,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JdbcCustomerRepository implements Repository<Customer> 
+public class JdbcCustomerRepository implements CustomerRepository
 {
 	/* Database connection URL for SQLite */
     private static final String DB_URL = "jdbc:sqlite:bank-system.db";

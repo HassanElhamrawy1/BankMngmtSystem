@@ -6,7 +6,10 @@
 package com.bank.service;
 
 import com.bank.model.Customer;
+
 import com.bank.model.Account;
+import com.bank.repository.CustomerRepository;
+import com.bank.repository.AccountRepository;
 import com.bank.model.SavingsAccount;
 import com.bank.model.CurrentAccount;
 import com.bank.repository.Repository;
@@ -23,12 +26,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.DriverManager;
+
 public class BankService 
 {
 	/* Repository for customer data access */
-    private Repository<Customer> customerRepository;
+    private CustomerRepository customerRepository;
     /* Repository for account data access */
-    private Repository<Account> accountRepository;
+    private final AccountRepository accountRepository;
     /* Service for account-specific operations */
     private AccountService accountService;
 
@@ -43,7 +50,7 @@ public class BankService
      * @param customerRepository Repository for customer data operations
      * @param accountRepository Repository for account data operations
      */
-    public BankService(Repository<Customer> customerRepository, Repository<Account> accountRepository) 
+    public BankService(CustomerRepository customerRepository, AccountRepository accountRepository) 
     {
         this.customerRepository = customerRepository;
         this.accountRepository = accountRepository;
@@ -214,9 +221,11 @@ public class BankService
         
     }
     
+    
     /**
-     * Transfers money between two accounts safely to prevent deadlocks.
+     * Transfers money between two accounts atomically using DB Transactions.
      * Implements FR-07: Transfer Funds and FR-14: Concurrency.
+     * 
      * @param fromAccountId The source account ID
      * @param toAccountId   The destination account ID
      * @param amount        The amount to transfer
@@ -224,39 +233,94 @@ public class BankService
      */
     public void transfer(String fromAccountId, String toAccountId, double amount) 
     {
-        /* Check both accounts exist */
-        Account fromAccount = accountRepository.findById(fromAccountId);
-        Account toAccount = accountRepository.findById(toAccountId);
-
-        if (fromAccount == null || toAccount == null) 
-        {
-            throw new IllegalArgumentException("One or both accounts not found.");
-        }
-
-        /* Validate amount */
+        /* 1. Basic Validation */
         if (amount <= 0) 
         {
             throw new IllegalArgumentException("Amount must be positive.");
         }
 
-        /* the look sequence to prevent the DeadLock */
-        Account first = fromAccount.getId().compareTo(toAccount.getId()) < 0 ? fromAccount : toAccount;
-        Account second = first == fromAccount ? toAccount : fromAccount;
+        /* 2. Initialize connection for the transaction */
+        Connection conn = null;
+        try 
+        {
+            /* Get connection from your database utility */
+            conn = DriverManager.getConnection("jdbc:sqlite:bank-system.db");
+            
+            /* START TRANSACTION: Disable auto-commit to manage atomicity manually */
+            conn.setAutoCommit(false); 
 
-        /*----------------  FR-14: Concurrent Transaction ---------------- */
-        /* Perform transfer */
-        first.getLock().lock();
-        second.getLock().lock();
-        try {  
-            accountService.withdraw(fromAccountId, amount); 
-            accountService.deposit(toAccountId, amount);  
-            
-            
-            accountRepository.save(fromAccount);  // استخدم save بدل update
-            accountRepository.save(toAccount);
-        } finally {
-            second.getLock().unlock();
-            first.getLock().unlock();
+            /* 3. Fetch accounts using the transaction-bound connection */
+            /* Note: Repository methods must be updated to accept a Connection object */
+            Account fromAccount = accountRepository.findById(conn, fromAccountId);
+            Account toAccount = accountRepository.findById(conn, toAccountId);
+
+            if (fromAccount == null || toAccount == null) 
+            {
+                throw new IllegalArgumentException("One or both accounts not found.");
+            }
+
+            /* 4. Deadlock Prevention: Determine lock order based on ID comparison */
+            Account first = fromAccount.getId().compareTo(toAccount.getId()) < 0 ? fromAccount : toAccount;
+            Account second = first == fromAccount ? toAccount : fromAccount;
+
+            /* 5. Acquire locks in the determined order to ensure thread safety */
+            first.getLock().lock();
+            second.getLock().lock();
+            try 
+            {
+                /* 6. Perform business logic on account objects */
+            	/*----------------  FR-14: Concurrent Transaction ---------------- */
+                fromAccount.withdraw(amount); 
+                toAccount.deposit(amount);  
+                
+                /* 7. Persist changes to the database using the SAME connection */
+                accountRepository.update(conn, fromAccount);
+                accountRepository.update(conn, toAccount);
+
+                /* 8. COMMIT: If all operations succeed, finalize the transaction */
+                conn.commit(); 
+                
+            } 
+            finally 
+            {
+                /* Always release locks in reverse order in the finally block */
+                second.getLock().unlock();
+                first.getLock().unlock();
+            }
+
+        } 
+        catch (Exception e) 
+        {
+            /* 9. ROLLBACK: If any error occurs, revert all changes in this transaction */
+            if (conn != null) 
+            {
+                try 
+                { 
+                    conn.rollback(); 
+                } 
+                catch (SQLException ex) 
+                { 
+                    /* Log rollback failure if necessary */ 
+                }
+            }
+            /* Rethrow the exception to inform the caller that the transfer failed */
+            throw new RuntimeException("Transfer failed, transaction rolled back: " + e.getMessage(), e);
+        } 
+        finally 
+        {
+            /* 10. Cleanup: Restore auto-commit and close the connection */
+            if (conn != null) 
+            {
+                try 
+                {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } 
+                catch (SQLException e) 
+                { 
+                    /* Log connection close failure if necessary */ 
+                }
+            }
         }
     }
     
