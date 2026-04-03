@@ -28,8 +28,23 @@ public class Main
 {
 	/* Create service */
     private static BankService bankService;
-    /* Create scanner */
+    /* Create scanner and initilize it */
     private static Scanner scanner;
+
+    /*
+     * Package-private setters used only by unit tests.
+     * Allows injecting mock BankService and controlled Scanner input
+     * without modifying production initialization logic in main().
+     */
+    static void setBankService(BankService service)
+    {
+        bankService = service;
+    }
+
+    static void setScanner(Scanner s)
+    {
+        scanner = s;
+    }
 
     /**
      * Entry point of the application.
@@ -118,7 +133,7 @@ public class Main
      * @param choiceCode The menu option number selected by the user
      * @return true to continue the menu loop, false to exit
      */
-    private static boolean handleMenuChoice(int choiceCode) 
+    static boolean handleMenuChoice(int choiceCode) 
     {
     	MenuChoice choice = MenuChoice.fromCode(choiceCode);
         
@@ -155,6 +170,7 @@ public class Main
                 viewTransactions();
                 break;  
             case GENERATE_ACCOUNTS_STATEMENT:
+            	scanner.nextLine();            /* Clear Buffer to solve the JUnit issue */
                 generateAccountStatement();
                 break;
             case GENERATE_SUMMARY_REPORT:
@@ -369,8 +385,8 @@ public class Main
     {
         try 
         {
+        	scanner.nextLine(); /* clear buffer */
             System.out.print("Enter Account ID (or 'all' for all accounts): ");
-            scanner.nextLine(); /* clear buffer */
             String input = scanner.nextLine();
             
             if ("all".equalsIgnoreCase(input)) 
@@ -407,45 +423,60 @@ public class Main
 	        System.out.print("Choose option: ");
 	        
 	        int choice = getUserChoice();
+	        reportingMenu = handleReportChoice(choice); /* delegate to testable method */
 	        ReportChoice reportChoice = ReportChoice.fromCode(choice);
-	        
-	        switch (reportChoice) 
-	        {
-	            case TOTAL_ACCOUNTS:
-	                System.out.println("Total Accounts: " + bankService.getTotalAccounts());
-	                break;
-	            case TOTAL_BALANCE:
-	                System.out.println("Total Balance: " + bankService.getTotalBalance());
-	                break;
-	            case HIGHEST_BALANCE:
-	                Account highest = bankService.getHighestBalanceAccount();
-	                if (highest != null) 
-	                {
-	                    System.out.println("Highest Balance Account: " + highest.getId() + 
-	                                     " (" + highest.getBalance() + ")");
-	                } else 
-	                {
-	                    System.out.println("No accounts found.");
-	                }
-	                break;
-	            case FILTER_MIN_BALANCE:
-	                filterByMinBalance();
-	                break;
-	            case FILTER_MAX_BALANCE:
-	                filterByMaxBalance();
-	                break;
-	            case FILTER_RANGE:
-	                filterByRange();
-	                break;
-	            case BACK:
-	                reportingMenu = false;
-	                break;
-	            case INVALID:
-	                System.out.println("Invalid choice!");
-	        }
+	       
 	    }
 	    System.out.println("=====================================");
 	}
+    
+    /**
+     * Handles a single report menu choice.
+     * Package-private to allow direct unit testing without scanner dependency.
+     * @param choice The report menu option number
+     * @return true to continue the report menu loop, false to go back
+     */
+    static boolean handleReportChoice(int choice) 
+    {
+        ReportChoice reportChoice = ReportChoice.fromCode(choice);
+
+        switch (reportChoice) 
+        {
+            case TOTAL_ACCOUNTS:
+                System.out.println("Total Accounts: " + bankService.getTotalAccounts());
+                return true;
+            case TOTAL_BALANCE:
+                System.out.println("Total Balance: " + bankService.getTotalBalance());
+                return true;
+            case HIGHEST_BALANCE:
+                Account highest = bankService.getHighestBalanceAccount();
+                if (highest != null) 
+                {
+                    System.out.println("Highest Balance Account: " + highest.getId() + 
+                                     " (" + highest.getBalance() + ")");
+                } else 
+                {
+                    System.out.println("No accounts found.");
+                }
+                return true;
+            case FILTER_MIN_BALANCE:
+                filterByMinBalance();
+                return true;
+            case FILTER_MAX_BALANCE:
+                filterByMaxBalance();
+                return true;
+            case FILTER_RANGE:
+                filterByRange();
+                return true;
+            case BACK:
+                return false; // exit loop
+            case INVALID:
+            default:
+                System.out.println("Invalid choice!");
+                return true;
+        }
+    }
+    
 
     private static void filterByMinBalance() 
     {
@@ -550,7 +581,6 @@ public class Main
      */
     public static void generateAccountStatement()
     {
-    	scanner.nextLine();
     	System.out.print("Enter Account ID (or 'all' for all accounts): ");
         String accId = scanner.nextLine().trim();
         if ("all".equalsIgnoreCase(accId)) 

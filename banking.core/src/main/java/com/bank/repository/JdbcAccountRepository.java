@@ -25,7 +25,7 @@ public class JdbcAccountRepository implements AccountRepository
      * @return A new database connection
      * @throws SQLException if a database access error occurs
      */
-    private Connection getConnection() throws SQLException 
+    protected Connection getConnection() throws SQLException 
     {
         return DriverManager.getConnection(DB_URL);
     }
