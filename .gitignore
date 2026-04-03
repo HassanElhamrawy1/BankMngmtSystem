@@ -28,6 +28,5 @@ out/
 .vscode/
 
 # Documentation temp files
-*.pages
 *.pages-tep
 *.rtf
