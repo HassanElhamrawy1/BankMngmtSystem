@@ -9,11 +9,28 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.nio.file.Paths;
 
 public class DatabaseConfig 
 {
-	/* SQLite database URL for the bank system */
-	private static final String DB_URL = "jdbc:sqlite:bank-system.db?busy_timeout=5000";
+	/* SQLite database URL - resolved dynamically to support both runtime and Maven test execution */
+    private static final String DB_URL;
+
+    static 
+    {
+        String userDir = System.getProperty("user.dir");
+
+        /* Handle case where working directory is the submodule folder during Maven tests */
+        if (userDir.endsWith("banking-app") || userDir.endsWith("banking.core")) 
+        {
+            userDir = new java.io.File(userDir).getParent();
+        }
+
+        /* Construct absolute path to the database file */
+        DB_URL = "jdbc:sqlite:" + Paths.get(userDir, "banking-app", "src", "main", "resources", "bank-system.db")
+                                       .toAbsolutePath().toString();
+    }
+	
     /* Singleton database connection instance */
     private static Connection connection;
 

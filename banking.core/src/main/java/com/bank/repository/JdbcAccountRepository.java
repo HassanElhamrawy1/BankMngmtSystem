@@ -13,12 +13,28 @@ import com.bank.model.TransactionType;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.nio.file.Paths;
 
 public class JdbcAccountRepository implements AccountRepository 
 {
-	/* Database connection URL for SQLite */
-	/* Add a timeout so SQLite waits instead of locking immediately */
-	private static final String DB_URL = "jdbc:sqlite:bank-system.db?busy_timeout=5000";
+	/* Database connection URL - resolved dynamically to support runtime and Maven test execution */
+    private static final String DB_URL;
+
+    static 
+    {
+        String userDir = System.getProperty("user.dir");
+
+        /* Handle case where working directory is the submodule folder during Maven tests */
+        if (userDir.endsWith("banking-app") || userDir.endsWith("banking.core")) 
+        {
+            userDir = new java.io.File(userDir).getParent();
+        }
+
+        /* Construct absolute path to the database file */
+        DB_URL = "jdbc:sqlite:" + Paths.get(userDir, "banking-app", "src", "main", "resources", "bank-system.db")
+                                       .toAbsolutePath()
+                                       .toString();
+    }
 
     /**
      * Establishes a connection to the SQLite database.

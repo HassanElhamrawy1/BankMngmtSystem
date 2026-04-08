@@ -6,14 +6,31 @@
 package com.bank.repository;
 
 import com.bank.model.Customer;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class JdbcCustomerRepository implements CustomerRepository
 {
-	/* Database connection URL for SQLite */
-    private static final String DB_URL = "jdbc:sqlite:bank-system.db";
+	/* Database connection URL for SQLite - resolved dynamically to support runtime and Maven tests */
+    private static final String DB_URL;
+
+    static 
+    {
+        String userDir = System.getProperty("user.dir");
+
+        /* Handle case where working directory is the submodule folder during Maven tests */
+        if (userDir.endsWith("banking-app") || userDir.endsWith("banking.core")) 
+        {
+            userDir = new java.io.File(userDir).getParent();
+        }
+
+        /* Construct absolute path to the database file */
+        DB_URL = "jdbc:sqlite:" + Paths.get(userDir, "banking-app", "src", "main", "resources", "bank-system.db")
+                                       .toAbsolutePath()
+                                       .toString();
+    }
 
     /**
      * Establishes a connection to the SQLite database.

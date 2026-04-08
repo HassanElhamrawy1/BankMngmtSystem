@@ -7,9 +7,13 @@
 package com.bank.app;
 
 import com.bank.model.Customer;
-import com.bank.model.Account;
 
-import com.bank.repository.Repository;
+import com.bank.model.Account;
+import com.bank.app.DatabaseConfig;
+import com.bank.app.MenuChoice;
+import com.bank.app.ReportChoice;
+
+
 import com.bank.repository.CustomerRepository;
 import com.bank.repository.AccountRepository;
 import com.bank.repository.JdbcCustomerRepository;
@@ -22,6 +26,7 @@ import java.util.Scanner;
 import java.util.List;
 import java.lang.Thread;
 import java.lang.InterruptedException;
+
 
 
 public class Main 
@@ -54,9 +59,13 @@ public class Main
      */
     public static void main(String[] args) 
     {
+    	
     	/* ----------------  FR-12 & FR-13: Initialize Database and Load Data  ---------------- */
     	try 
         {
+    	    /* Load SQLite JDBC driver explicitly to ensure availability in exec-maven-plugin classloader */
+    	    Class.forName("org.sqlite.JDBC");
+
             /* Initialize database */
             DatabaseConfig.initializeDatabase();
 
@@ -83,6 +92,10 @@ public class Main
             DatabaseConfig.closeConnection();
             System.out.println("Thank you for using Bank Management System!");
 	    } 
+    	catch (ClassNotFoundException e)
+	    {
+	        System.err.println("SQLite Driver not found: " + e.getMessage());
+	    }
     	catch (SQLException e) 
 	    {
 	        System.err.println("Database error: " + e.getMessage());
@@ -424,7 +437,6 @@ public class Main
 	        
 	        int choice = getUserChoice();
 	        reportingMenu = handleReportChoice(choice); /* delegate to testable method */
-	        ReportChoice reportChoice = ReportChoice.fromCode(choice);
 	       
 	    }
 	    System.out.println("=====================================");

@@ -7,6 +7,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.bank.model.Account;
+import com.bank.model.CurrentAccount;
+import com.bank.model.SavingsAccount;
+
 /*
  * Unit tests for the Account class using real-world ID patterns from the database.
  * This test covers scenarios where one customer has multiple accounts.

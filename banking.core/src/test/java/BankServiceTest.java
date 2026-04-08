@@ -5,6 +5,7 @@
  * Uses Mockito to isolate the service from all repository dependencies.
  * Implements test coverage for FR-01 through FR-18.
  */
+
 package com.bank.service;
 
 import com.bank.model.*;
